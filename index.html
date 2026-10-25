@@ -610,6 +610,11 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
   const LANGS = ["es","en","de","fr"];
   let L = LANGS.includes(root.getAttribute("data-lang")) ? root.getAttribute("data-lang") : "es";
   const t = () => T[L];
+  /* Título en el idioma de la web si la ficha trae «titulos: { en: "…" }» */
+  const title = a => (a.titulos && a.titulos[L]) || a.titulo;
+  /* «pdf» puede ser una ruta o un objeto con una ruta por idioma: { es: "…", en: "…" } */
+  const pdfs = a => !a.pdf ? [] : typeof a.pdf === "string" ? [[a.idioma === "en" ? "en" : "es", a.pdf]] :
+    Object.entries(a.pdf).sort(([x],[y]) => (y === L) - (x === L) || (y === "en") - (x === "en"));
 
   function summary(a){
     const r = a.resumen;
@@ -656,7 +661,7 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     const q = norm($("q").value.trim());
     if(q){
       const r = a.resumen && typeof a.resumen === "object" ? Object.values(a.resumen).join(" ") : a.resumen;
-      const hay = norm([a.titulo, a.autor, r, a.region, a.tono, T.en.tono[a.tono], ...(a.etiquetas || [])].join(" "));
+      const hay = norm([a.titulo, ...Object.values(a.titulos || {}), a.autor, r, a.region, a.tono, T.en.tono[a.tono], ...(a.etiquetas || [])].join(" "));
       if(!q.split(/\s+/).every(w => hay.includes(w))) return false;
     }
     const li = $("fIdioma").value;
@@ -675,7 +680,7 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
   function sorted(list){
     const o = $("fOrden").value;
     return list.sort((x, y) =>
-      o === "titulo" ? x.titulo.localeCompare(y.titulo, L) :
+      o === "titulo" ? title(x).localeCompare(title(y), L) :
       o === "nivel" ? x.nivel[0] - y.nivel[0] :
       String(y.fecha).localeCompare(String(x.fecha)));
   }
@@ -689,10 +694,10 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     $("grid").innerHTML = list.map(a => {
       const sm = summary(a);
       return `
-      <button class="card" type="button" data-id="${esc(a.id)}" aria-label="${esc(t().view)} ${esc(a.titulo)}">
+      <button class="card" type="button" data-id="${esc(a.id)}" aria-label="${esc(t().view)} ${esc(title(a))}">
         <div class="top">
           <div class="tags">${tagsFor(a)}</div>
-          <h3>${esc(a.titulo)}</h3>
+          <h3>${esc(title(a))}</h3>
           <span class="by">${esc(t().by)} ${esc(a.autor)}${a.region ? " · " + esc(a.region) : ""}</span>
           <p class="sum">${esc(sm.text)}</p>
           ${sm.other ? `<span class="note">${esc(noteFor(sm))}</span>` : ""}
@@ -717,7 +722,7 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     current = id;
     const sm = summary(a), f = t().facts;
     $("dTags").innerHTML = tagsFor(a) + (a.etiquetas || []).map(x => `<span class="tag">${esc(x)}</span>`).join("");
-    $("dTitle").textContent = a.titulo;
+    $("dTitle").textContent = title(a);
     $("dBy").textContent = t().by + " " + a.autor;
     $("dSum").innerHTML = esc(sm.text) + (sm.other ? ` <span class="note">${esc(noteFor(sm))}</span>` : "");
     $("dFacts").innerHTML = [
@@ -726,8 +731,10 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     ].map(([k, v]) => `<div><dt class="label">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
     const lu = LICURL[a.licencia] ? LICURL[a.licencia] + L : "#licencias";
     $("dLic").innerHTML = `<b>${esc(a.licencia)}.</b> ${esc(t().lic[a.licencia] || "")} ${a.srd === false ? "" : esc(t().third)} <a href="${lu}" target="_blank" rel="noopener">${esc(t().licLink)}</a>`;
-    $("dAct").innerHTML = a.pdf
-      ? `<a class="btn primary" href="${esc(a.pdf)}" download>${esc(t().dl)}</a><span class="label">${esc(t().free)} · ${esc(a.licencia)}</span>`
+    const files = pdfs(a);
+    $("dAct").innerHTML = files.length
+      ? files.map(([k, f], i) => `<a class="btn${i === 0 ? " primary" : ""}" href="${esc(f)}" download>${esc(t().dl)}${files.length > 1 ? " · " + esc(t().idioma[k] || k) : ""}</a>`).join("") +
+        `<span class="label">${esc(t().free)} · ${esc(a.licencia)}</span>`
       : `<button class="btn" type="button" disabled>${esc(t().soon)}</button>`;
     if(!dlg.open){ if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); }
   }
