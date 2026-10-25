@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Envío recibido · Submission received</title>
+<meta name="robots" content="noindex">
+<title>Envío recibido · Códice Errante</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -24,8 +25,16 @@
   --bronze:#D6A44E; --arcane:#73B8B4; --seal:#E08896; --field:#0F1118; --fold:rgba(0,0,0,.5); color-scheme:dark }
 
 /* Idioma: se oculta el texto del idioma inactivo, salvo en la portada (.both) */
-:root:not([data-lang="en"]) body [lang="en"]:not(.both){display:none !important}
-:root[data-lang="en"] body [lang="es"]:not(.both){display:none !important}
+:root:not([data-lang="en"]) body [lang="en"]:not(.both),
+:root:not([data-lang="de"]) body [lang="de"]:not(.both),
+:root:not([data-lang="fr"]) body [lang="fr"]:not(.both),
+:root[data-lang="en"] body [lang="es"]:not(.both),
+:root[data-lang="de"] body [lang="es"]:not(.both),
+:root[data-lang="fr"] body [lang="es"]:not(.both){display:none !important}
+/* Portada: castellano en el verso; en el recto, inglés o el idioma activo (alemán, francés) */
+.page[lang="de"], .page[lang="fr"]{display:none}
+:root[data-lang="de"] .page[lang="de"], :root[data-lang="fr"] .page[lang="fr"]{display:flex}
+:root[data-lang="de"] .page[lang="en"], :root[data-lang="fr"] .page[lang="en"]{display:none}
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -68,10 +77,10 @@ nav ul a:hover{color:var(--ink)}
 .cta{display:flex; flex-wrap:wrap; gap:.7rem}
 .switch{font:italic 400 1rem var(--body); background:none; border:0; padding:0; color:var(--arcane); text-decoration:underline; cursor:pointer; text-align:left}
 /* Página inactiva: en segundo plano, como la traducción en una edición bilingüe */
-:root:not([data-lang="en"]) .page[lang="en"], :root[data-lang="en"] .page[lang="es"]{color:var(--muted)}
-:root:not([data-lang="en"]) .page[lang="en"] h1 em, :root[data-lang="en"] .page[lang="es"] h1 em{color:inherit}
-:root:not([data-lang="en"]) .page[lang="en"] .cta, :root[data-lang="en"] .page[lang="es"] .cta{display:none}
-:root:not([data-lang="en"]) .page[lang="es"] .switch, :root[data-lang="en"] .page[lang="en"] .switch{display:none}
+.page:not(.active){color:var(--muted)}
+.page:not(.active) h1 em{color:inherit}
+.page:not(.active) .cta{display:none}
+.page.active .switch{display:none}
 .btn{display:inline-flex; align-items:center; gap:.4rem; font:500 1rem/1 var(--body); padding:.8rem 1.2rem; border-radius:3px; text-decoration:none; border:1px solid var(--ink); color:var(--ink); background:transparent; cursor:pointer}
 .btn.primary{background:var(--ink); color:var(--bg)}
 .btn[disabled]{opacity:.5; cursor:not-allowed}
@@ -151,6 +160,8 @@ summary{cursor:pointer; padding:.9rem 1.1rem; font:700 1.1rem var(--display)}
 details .in{padding:0 1.1rem 1.1rem; display:grid; gap:.7rem; max-width:62em}
 details ul{margin:0; padding-left:1.2rem; display:grid; gap:.35rem}
 blockquote{margin:0; padding:.8rem 1rem; border-left:3px solid var(--bronze); font:400 .85rem/1.55 var(--mono); background:var(--bg)}
+blockquote, details .in{overflow-wrap:anywhere; min-width:0}
+details{min-width:0}
 footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between}
 
 @media (max-width:760px){
@@ -158,18 +169,31 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
   .spread::after{display:none}
   .page{padding:1.5rem 1.2rem}
   .page + .page{border-top:1px solid var(--line)}
-  :root[data-lang="en"] .page[lang="en"]{order:-1; border-top:0}
-  :root[data-lang="en"] .page[lang="es"]{border-top:1px solid var(--line)}
-  :root:not([data-lang="en"]) .page[lang="en"] p, :root[data-lang="en"] .page[lang="es"] p{display:none}
-  :root:not([data-lang="en"]) .page[lang="en"] h1, :root[data-lang="en"] .page[lang="es"] h1{font-size:1.4rem}
+  .page.active{order:-1; border-top:0}
+  .page:not(.active){border-top:1px solid var(--line)}
+  .page:not(.active) p{display:none}
+  .page:not(.active) h1{font-size:1.4rem}
 }
-.page{color:var(--ink)!important}.page .cta{display:flex!important}</style>
+
+/* Página de agradecimiento: las cuatro versiones visibles a la vez */
+.thanks .spread{grid-template-columns:1fr 1fr}
+.thanks .spread::after{display:none}
+.thanks .page{display:flex !important; color:var(--ink)}
+.thanks .page + .page{border-top:0}
+.thanks .page:nth-child(n+3){border-top:1px solid var(--line)}
+.thanks .page:nth-child(odd){border-right:1px solid var(--line)}
+.thanks .page h1{font-size:clamp(1.5rem,3vw,2.2rem)}
+@media (max-width:760px){ .thanks .spread{grid-template-columns:1fr} .thanks .page:nth-child(odd){border-right:0} .thanks .page + .page{border-top:1px solid var(--line)} }
+</style>
 </head>
 <body>
-<div class="wrap hero" style="max-width:960px">
+<div class="wrap hero thanks">
+<a class="brand" href="/"><span><b>Códice Errante</b><small>The Wandering Codex</small></span></a>
 <div class="spread">
-<article class="page both" lang="es"><span class="label">Códice Errante</span><h1>Hemos recibido tu aventura</h1><p>Gracias por compartirla. La revisaremos en los próximos días y te escribiremos al correo que has indicado para contarte si se publica o si necesita algún cambio.</p><div class="foot"><a class="btn primary" href="/?lang=es#catalogo">Volver al catálogo</a></div></article>
-<article class="page both" lang="en"><span class="label">The Wandering Codex</span><h1>We have received your adventure</h1><p>Thank you for sharing it. We will review it over the next few days and write to the email you gave us to let you know whether it is published or needs changes.</p><div class="foot"><a class="btn primary" href="/?lang=en#catalogo">Back to the catalogue</a></div></article>
+<article class="page both active" lang="es"><span class="label">Castellano</span><h1>Hemos recibido tu aventura</h1><p>Gracias por compartirla. La revisaremos en los próximos días y te escribiremos al correo que has indicado para contarte si se publica o si necesita algún cambio.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=es#catalogo">Volver al catálogo</a></div></div></article>
+<article class="page both active" lang="en"><span class="label">English</span><h1>We have received your adventure</h1><p>Thank you for sharing it. We will review it over the next few days and write to the email you gave us to let you know whether it is published or needs changes.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=en#catalogo">Back to the catalogue</a></div></div></article>
+<article class="page both active" lang="de"><span class="label">Deutsch</span><h1>Wir haben dein Abenteuer erhalten</h1><p>Danke, dass du es teilst. Wir prüfen es in den nächsten Tagen und schreiben dir an die angegebene E-Mail-Adresse, ob es veröffentlicht wird oder noch Änderungen braucht.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=de#catalogo">Zurück zum Katalog</a></div></div></article>
+<article class="page both active" lang="fr"><span class="label">Français</span><h1>Nous avons bien reçu votre aventure</h1><p>Merci de l’avoir partagée. Nous la relirons dans les prochains jours et vous écrirons à l’adresse indiquée pour vous dire si elle est publiée ou si elle doit être modifiée.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=fr#catalogo">Retour au catalogue</a></div></div></article>
 </div>
 </div>
 </body>

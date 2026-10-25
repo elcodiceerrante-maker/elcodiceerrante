@@ -1,7 +1,7 @@
 # Códice Errante · The Wandering Codex
 
-Archivo comunitario y bilingüe (español/inglés) de aventuras gratuitas de rol para D&D 2024 ambientadas en Azeroth.
-A bilingual (Spanish/English) community archive of free D&D 2024 adventures set in Azeroth.
+Archivo comunitario en cuatro idiomas (español, inglés, alemán y francés) de aventuras gratuitas de rol para D&D 2024 ambientadas en Azeroth.
+A community archive in Spanish, English, German and French, of free D&D 2024 adventures set in Azeroth.
 
 Contenido de fans no oficial. / Unofficial fan content.
 

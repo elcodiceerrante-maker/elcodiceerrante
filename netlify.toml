@@ -7,7 +7,7 @@
 # Redirige la dirección provisional de Netlify al dominio propio
 # (activa estas líneas cuando codiceerrante.es esté funcionando).
 # [[redirects]]
-#   from = "https://elcodiceerrante.netlify.app/*"
+#   from = "https://codiceerrante.netlify.app/*"
 #   to = "https://codiceerrante.es/:splat"
 #   status = 301
 #   force = true

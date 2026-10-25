@@ -13,8 +13,9 @@
 (function(){
   var l = null;
   try { l = new URLSearchParams(location.search).get("lang"); } catch(e){}
-  if(l !== "es" && l !== "en"){ try { l = localStorage.getItem("ce-lang"); } catch(e){} }
-  if(l !== "es" && l !== "en"){ l = /^es\b/i.test(navigator.language || "es") ? "es" : "en"; }
+  var ok = function(x){ return x === "es" || x === "en" || x === "de" || x === "fr"; };
+  if(!ok(l)){ try { l = localStorage.getItem("ce-lang"); } catch(e){} }
+  if(!ok(l)){ var n = String(navigator.language || "es").slice(0,2).toLowerCase(); l = ok(n) ? n : "en"; }
   document.documentElement.setAttribute("data-lang", l);
   document.documentElement.lang = l;
 })();
@@ -36,8 +37,16 @@
   --bronze:#D6A44E; --arcane:#73B8B4; --seal:#E08896; --field:#0F1118; --fold:rgba(0,0,0,.5); color-scheme:dark }
 
 /* Idioma: se oculta el texto del idioma inactivo, salvo en la portada (.both) */
-:root:not([data-lang="en"]) body [lang="en"]:not(.both){display:none !important}
-:root[data-lang="en"] body [lang="es"]:not(.both){display:none !important}
+:root:not([data-lang="en"]) body [lang="en"]:not(.both),
+:root:not([data-lang="de"]) body [lang="de"]:not(.both),
+:root:not([data-lang="fr"]) body [lang="fr"]:not(.both),
+:root[data-lang="en"] body [lang="es"]:not(.both),
+:root[data-lang="de"] body [lang="es"]:not(.both),
+:root[data-lang="fr"] body [lang="es"]:not(.both){display:none !important}
+/* Portada: castellano en el verso; en el recto, inglés o el idioma activo (alemán, francés) */
+.page[lang="de"], .page[lang="fr"]{display:none}
+:root[data-lang="de"] .page[lang="de"], :root[data-lang="fr"] .page[lang="fr"]{display:flex}
+:root[data-lang="de"] .page[lang="en"], :root[data-lang="fr"] .page[lang="en"]{display:none}
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -80,10 +89,10 @@ nav ul a:hover{color:var(--ink)}
 .cta{display:flex; flex-wrap:wrap; gap:.7rem}
 .switch{font:italic 400 1rem var(--body); background:none; border:0; padding:0; color:var(--arcane); text-decoration:underline; cursor:pointer; text-align:left}
 /* Página inactiva: en segundo plano, como la traducción en una edición bilingüe */
-:root:not([data-lang="en"]) .page[lang="en"], :root[data-lang="en"] .page[lang="es"]{color:var(--muted)}
-:root:not([data-lang="en"]) .page[lang="en"] h1 em, :root[data-lang="en"] .page[lang="es"] h1 em{color:inherit}
-:root:not([data-lang="en"]) .page[lang="en"] .cta, :root[data-lang="en"] .page[lang="es"] .cta{display:none}
-:root:not([data-lang="en"]) .page[lang="es"] .switch, :root[data-lang="en"] .page[lang="en"] .switch{display:none}
+.page:not(.active){color:var(--muted)}
+.page:not(.active) h1 em{color:inherit}
+.page:not(.active) .cta{display:none}
+.page.active .switch{display:none}
 .btn{display:inline-flex; align-items:center; gap:.4rem; font:500 1rem/1 var(--body); padding:.8rem 1.2rem; border-radius:3px; text-decoration:none; border:1px solid var(--ink); color:var(--ink); background:transparent; cursor:pointer}
 .btn.primary{background:var(--ink); color:var(--bg)}
 .btn[disabled]{opacity:.5; cursor:not-allowed}
@@ -163,6 +172,8 @@ summary{cursor:pointer; padding:.9rem 1.1rem; font:700 1.1rem var(--display)}
 details .in{padding:0 1.1rem 1.1rem; display:grid; gap:.7rem; max-width:62em}
 details ul{margin:0; padding-left:1.2rem; display:grid; gap:.35rem}
 blockquote{margin:0; padding:.8rem 1rem; border-left:3px solid var(--bronze); font:400 .85rem/1.55 var(--mono); background:var(--bg)}
+blockquote, details .in{overflow-wrap:anywhere; min-width:0}
+details{min-width:0}
 footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between}
 
 @media (max-width:760px){
@@ -170,10 +181,10 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
   .spread::after{display:none}
   .page{padding:1.5rem 1.2rem}
   .page + .page{border-top:1px solid var(--line)}
-  :root[data-lang="en"] .page[lang="en"]{order:-1; border-top:0}
-  :root[data-lang="en"] .page[lang="es"]{border-top:1px solid var(--line)}
-  :root:not([data-lang="en"]) .page[lang="en"] p, :root[data-lang="en"] .page[lang="es"] p{display:none}
-  :root:not([data-lang="en"]) .page[lang="en"] h1, :root[data-lang="en"] .page[lang="es"] h1{font-size:1.4rem}
+  .page.active{order:-1; border-top:0}
+  .page:not(.active){border-top:1px solid var(--line)}
+  .page:not(.active) p{display:none}
+  .page:not(.active) h1{font-size:1.4rem}
 }
 </style>
 </head>
@@ -186,14 +197,17 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
   </a>
   <div class="navr">
     <ul>
-      <li><a href="#catalogo"><span lang="es">Catálogo</span><span lang="en">Catalogue</span></a></li>
-      <li><a href="#enviar"><span lang="es">Envía tu aventura</span><span lang="en">Submit yours</span></a></li>
-      <li><a href="#licencias"><span lang="es">Licencias</span><span lang="en">Licences</span></a></li>
-      <li><a href="#legal"><span lang="es">Aviso legal</span><span lang="en">Legal</span></a></li>
+      <li><a href="#catalogo"><span lang="es">Catálogo</span><span lang="en">Catalogue</span><span lang="de">Katalog</span><span lang="fr">Catalogue</span></a></li>
+      <li><a href="#enviar"><span lang="es">Envía tu aventura</span><span lang="en">Submit yours</span><span lang="de">Abenteuer einreichen</span><span lang="fr">Proposer une aventure</span></a></li>
+      <li><a href="#licencias"><span lang="es">Licencias</span><span lang="en">Licences</span><span lang="de">Lizenzen</span><span lang="fr">Licences</span></a></li>
+      <li data-yt hidden><a class="ytlink" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="vertical-align:-3px"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2 27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8ZM10 15V9l5.2 3Z" fill="currentColor"/></svg> YouTube</a></li>
+      <li><a href="#legal"><span lang="es">Aviso legal</span><span lang="en">Legal</span><span lang="de">Impressum</span><span lang="fr">Mentions légales</span></a></li>
     </ul>
     <div class="langs" role="group" aria-label="Idioma / Language">
       <button type="button" data-setlang="es" aria-pressed="true" title="Español">ES</button>
       <button type="button" data-setlang="en" aria-pressed="false" title="English">EN</button>
+      <button type="button" data-setlang="de" aria-pressed="false" title="Deutsch">DE</button>
+      <button type="button" data-setlang="fr" aria-pressed="false" title="Français">FR</button>
     </div>
   </div>
 </nav>
@@ -218,44 +232,62 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
         <button class="switch" type="button" data-setlang="en">Read the site in English</button>
       </div>
     </article>
+    <article class="page both" lang="de">
+      <div class="folio"><span class="label">Deutsch</span><span class="label">Fan-Werk · Kostenlos</span></div>
+      <h1>Abenteuer aus der Community, <em>frei für jeden Spieltisch</em>.</h1>
+      <p>Finde ein Abenteuer nach Stufe, Gruppengröße, Ton oder Sprache, lade es kostenlos herunter und bring es an deinen Tisch. Hast du selbst eines geschrieben, reiche es ein: Nach der Prüfung kann es jeder unter der freien Lizenz deiner Wahl nutzen.</p>
+      <div class="foot">
+        <div class="cta"><a class="btn primary" href="#catalogo">Abenteuer durchsuchen</a><a class="btn" href="#enviar">Meines einreichen</a></div>
+        <button class="switch" type="button" data-setlang="de">Website auf Deutsch lesen</button>
+      </div>
+    </article>
+    <article class="page both" lang="fr">
+      <div class="folio"><span class="label">Français</span><span class="label">Fait par des fans · Gratuit</span></div>
+      <h1>Des aventures écrites par la communauté, <em>libres pour toutes les tables</em>.</h1>
+      <p>Trouvez une aventure par niveau, nombre de joueurs, ton ou langue, téléchargez-la gratuitement et apportez-la à votre table. Si vous en avez écrit une, proposez-la : après relecture, chacun pourra l’utiliser sous la licence libre de votre choix.</p>
+      <div class="foot">
+        <div class="cta"><a class="btn primary" href="#catalogo">Parcourir les aventures</a><a class="btn" href="#enviar">Proposer la mienne</a></div>
+        <button class="switch" type="button" data-setlang="fr">Lire le site en français</button>
+      </div>
+    </article>
   </div>
   <div class="ledger" aria-live="polite">
-    <div><b id="nPub">0</b><span class="label"><span lang="es">Publicadas</span><span lang="en">Published</span></span></div>
-    <div><b id="nPrep">0</b><span class="label"><span lang="es">En preparación</span><span lang="en">In progress</span></span></div>
-    <div><b id="nDays">—</b><span class="label"><span lang="es">Días para el manual de Warcraft</span><span lang="en">Days to the Warcraft sourcebook</span></span></div>
+    <div><b id="nPub">0</b><span class="label"><span lang="es">Publicadas</span><span lang="en">Published</span><span lang="de">Veröffentlicht</span><span lang="fr">Publiées</span></span></div>
+    <div><b id="nPrep">0</b><span class="label"><span lang="es">En preparación</span><span lang="en">In progress</span><span lang="de">In Arbeit</span><span lang="fr">En préparation</span></span></div>
+    <div><b id="nDays">—</b><span class="label"><span lang="es">Días para el manual de Warcraft</span><span lang="en">Days to the Warcraft sourcebook</span><span lang="de">Tage bis zum Warcraft-Quellenbuch</span><span lang="fr">Jours avant le livre de Warcraft</span></span></div>
   </div>
 </header>
 
 <section id="catalogo">
   <div class="head">
-    <h2><span lang="es">Catálogo</span><span lang="en">Catalogue</span></h2>
-    <p><span lang="es">Busca por título, autor, región o palabra clave, y afina con los filtros. Todas las aventuras son gratuitas y cada ficha indica en qué idioma está escrita.</span><span lang="en">Search by title, author, region or keyword, then narrow it down with the filters. Every adventure is free, and each entry shows the language it is written in.</span></p>
+    <h2><span lang="es">Catálogo</span><span lang="en">Catalogue</span><span lang="de">Katalog</span><span lang="fr">Catalogue</span></h2>
+    <p><span lang="es">Busca por título, autor, región o palabra clave, y afina con los filtros. Todas las aventuras son gratuitas y cada ficha indica en qué idioma está escrita.</span><span lang="en">Search by title, author, region or keyword, then narrow it down with the filters. Every adventure is free, and each entry shows the language it is written in.</span><span lang="de">Suche nach Titel, Autor, Region oder Stichwort und grenze die Ergebnisse mit den Filtern ein. Alle Abenteuer sind kostenlos, und jeder Eintrag zeigt, in welcher Sprache es geschrieben ist.</span><span lang="fr">Cherchez par titre, auteur, région ou mot-clé, puis affinez avec les filtres. Toutes les aventures sont gratuites, et chaque fiche indique la langue dans laquelle elle est écrite.</span></p>
   </div>
 
   <div class="search" role="search">
-    <label class="sr" for="q"><span lang="es">Buscar aventuras</span><span lang="en">Search adventures</span></label>
+    <label class="sr" for="q"><span lang="es">Buscar aventuras</span><span lang="en">Search adventures</span><span lang="de">Abenteuer suchen</span><span lang="fr">Rechercher des aventures</span></label>
     <input type="search" id="q" autocomplete="off"
       data-ph-es="Busca por título, autor, región o palabra clave: no muertos, asedio, one-shot…"
-      data-ph-en="Search by title, author, region or keyword: undead, siege, one-shot…">
+      data-ph-en="Search by title, author, region or keyword: undead, siege, one-shot…" data-ph-de="Suche nach Titel, Autor, Region oder Stichwort: Untote, Belagerung, One-Shot…" data-ph-fr="Cherchez par titre, auteur, région ou mot-clé : morts-vivants, siège, one-shot…">
     <div class="fgrid">
-      <label><span class="label"><span lang="es">Idioma</span><span lang="en">Language</span></span>
-        <select id="fIdioma"><option value="" data-en="Any">Cualquiera</option><option value="es" data-en="Spanish">Español</option><option value="en" data-en="English">Inglés</option></select></label>
-      <label><span class="label"><span lang="es">Nivel</span><span lang="en">Level</span></span>
-        <select id="fNivel"><option value="" data-en="Any">Cualquiera</option><option value="1-4" data-en="1–4 · Starting out">1–4 · Iniciación</option><option value="5-10" data-en="5–10 · Heroic">5–10 · Heroico</option><option value="11-16" data-en="11–16 · Epic">11–16 · Épico</option><option value="17-20" data-en="17–20 · Legendary">17–20 · Legendario</option></select></label>
-      <label><span class="label"><span lang="es">Jugadores</span><span lang="en">Players</span></span>
-        <select id="fPj"><option value="" data-en="Any">Cualquiera</option><option value="1">1–2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6" data-en="6 or more">6 o más</option></select></label>
-      <label><span class="label"><span lang="es">Duración</span><span lang="en">Length</span></span>
-        <select id="fDur"><option value="" data-en="Any">Cualquiera</option><option value="1" data-en="One session">Una sesión</option><option value="2-4" data-en="2–4 sessions">2–4 sesiones</option><option value="5-99" data-en="5 or more">5 o más</option></select></label>
-      <label><span class="label"><span lang="es">Tono</span><span lang="en">Tone</span></span>
-        <select id="fTono"><option value="" data-en="Any">Cualquiera</option><option value="Épico" data-en="Epic">Épico</option><option value="Trágico" data-en="Tragic">Trágico</option><option value="Oscuro" data-en="Dark">Oscuro</option><option value="Ligero" data-en="Light-hearted">Ligero</option><option value="Misterio" data-en="Mystery">Misterio</option><option value="Horror" data-en="Horror">Horror</option></select></label>
-      <label><span class="label"><span lang="es">Licencia</span><span lang="en">Licence</span></span>
-        <select id="fLic"><option value="" data-en="Any">Cualquiera</option><option>CC BY-NC-SA 4.0</option><option>CC BY-NC 4.0</option><option>CC0 1.0</option></select></label>
-      <label><span class="label"><span lang="es">Ordenar</span><span lang="en">Sort</span></span>
-        <select id="fOrden"><option value="reciente" data-en="Newest first">Más recientes</option><option value="titulo" data-en="Title (A–Z)">Título (A–Z)</option><option value="nivel" data-en="Starting level">Nivel inicial</option></select></label>
+      <label><span class="label"><span lang="es">Idioma</span><span lang="en">Language</span><span lang="de">Sprache</span><span lang="fr">Langue</span></span>
+        <select id="fIdioma"><option value="" data-en="Any" data-de="Beliebig" data-fr="Indifférent">Cualquiera</option><option value="es" data-en="Spanish" data-de="Spanisch" data-fr="Espagnol">Español</option><option value="en" data-en="English" data-de="Englisch" data-fr="Anglais">Inglés</option></select></label>
+      <label><span class="label"><span lang="es">Nivel</span><span lang="en">Level</span><span lang="de">Stufe</span><span lang="fr">Niveau</span></span>
+        <select id="fNivel"><option value="" data-en="Any" data-de="Beliebig" data-fr="Indifférent">Cualquiera</option><option value="1-4" data-en="1–4 · Starting out" data-de="1–4 · Einstieg" data-fr="1–4 · Débutant">1–4 · Iniciación</option><option value="5-10" data-en="5–10 · Heroic" data-de="5–10 · Heroisch" data-fr="5–10 · Héroïque">5–10 · Heroico</option><option value="11-16" data-en="11–16 · Epic" data-de="11–16 · Episch" data-fr="11–16 · Épique">11–16 · Épico</option><option value="17-20" data-en="17–20 · Legendary" data-de="17–20 · Legendär" data-fr="17–20 · Légendaire">17–20 · Legendario</option></select></label>
+      <label><span class="label"><span lang="es">Jugadores</span><span lang="en">Players</span><span lang="de">Spieler</span><span lang="fr">Joueurs</span></span>
+        <select id="fPj"><option value="" data-en="Any" data-de="Beliebig" data-fr="Indifférent">Cualquiera</option><option value="1">1–2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6" data-en="6 or more" data-de="6 oder mehr" data-fr="6 ou plus">6 o más</option></select></label>
+      <label><span class="label"><span lang="es">Duración</span><span lang="en">Length</span><span lang="de">Dauer</span><span lang="fr">Durée</span></span>
+        <select id="fDur"><option value="" data-en="Any" data-de="Beliebig" data-fr="Indifférent">Cualquiera</option><option value="1" data-en="One session" data-de="Eine Sitzung" data-fr="Une séance">Una sesión</option><option value="2-4" data-en="2–4 sessions" data-de="2–4 Sitzungen" data-fr="2–4 séances">2–4 sesiones</option><option value="5-99" data-en="5 or more" data-de="5 oder mehr" data-fr="5 ou plus">5 o más</option></select></label>
+      <label><span class="label"><span lang="es">Tono</span><span lang="en">Tone</span><span lang="de">Ton</span><span lang="fr">Ton</span></span>
+        <select id="fTono"><option value="" data-en="Any" data-de="Beliebig" data-fr="Indifférent">Cualquiera</option><option value="Épico" data-en="Epic" data-de="Episch" data-fr="Épique">Épico</option><option value="Trágico" data-en="Tragic" data-de="Tragisch" data-fr="Tragique">Trágico</option><option value="Oscuro" data-en="Dark" data-de="Düster" data-fr="Sombre">Oscuro</option><option value="Ligero" data-en="Light-hearted" data-de="Heiter" data-fr="Léger">Ligero</option><option value="Misterio" data-en="Mystery" data-de="Mysterium" data-fr="Mystère">Misterio</option><option value="Horror" data-en="Horror" data-de="Horror" data-fr="Horreur">Horror</option></select></label>
+      <label><span class="label"><span lang="es">Licencia</span><span lang="en">Licence</span><span lang="de">Lizenz</span><span lang="fr">Licence</span></span>
+        <select id="fLic"><option value="" data-en="Any" data-de="Beliebig" data-fr="Indifférent">Cualquiera</option><option>CC BY-NC-SA 4.0</option><option>CC BY-NC 4.0</option><option>CC0 1.0</option></select></label>
+      <label><span class="label"><span lang="es">Ordenar</span><span lang="en">Sort</span><span lang="de">Sortieren</span><span lang="fr">Trier</span></span>
+        <select id="fOrden"><option value="reciente" data-en="Newest first" data-de="Neueste zuerst" data-fr="Plus récentes">Más recientes</option><option value="titulo" data-en="Title (A–Z)" data-de="Titel (A–Z)" data-fr="Titre (A–Z)">Título (A–Z)</option><option value="nivel" data-en="Starting level" data-de="Anfangsstufe" data-fr="Niveau de départ">Nivel inicial</option></select></label>
     </div>
   </div>
 
-  <div class="bar"><span class="label" id="count" aria-live="polite"></span><button class="linkbtn" id="reset" type="button"><span lang="es">Quitar filtros</span><span lang="en">Clear filters</span></button></div>
+  <div class="bar"><span class="label" id="count" aria-live="polite"></span><button class="linkbtn" id="reset" type="button"><span lang="es">Quitar filtros</span><span lang="en">Clear filters</span><span lang="de">Filter zurücksetzen</span><span lang="fr">Effacer les filtres</span></button></div>
   <div class="grid" id="grid"></div>
   <p class="empty" id="empty" hidden></p>
 </section>
@@ -279,8 +311,8 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
 
 <section id="enviar">
   <div class="head">
-    <h2><span lang="es">Envía tu aventura</span><span lang="en">Submit your adventure</span></h2>
-    <p><span lang="es">Aceptamos aventuras en español o en inglés. Todos los envíos se revisan antes de publicarse, normalmente en unos días: comprobamos que la aventura sea tuya, que no copie texto ni tablas de libros oficiales y que respete las normas de la comunidad. Los campos con asterisco son obligatorios.</span><span lang="en">We accept adventures in Spanish or English. Every submission is reviewed before it goes live, usually within a few days: we check that the adventure is yours, that it does not copy text or tables from official books, and that it follows the community rules. Fields marked with an asterisk are required.</span></p>
+    <h2><span lang="es">Envía tu aventura</span><span lang="en">Submit your adventure</span><span lang="de">Reiche dein Abenteuer ein</span><span lang="fr">Proposez votre aventure</span></h2>
+    <p><span lang="es">Aceptamos aventuras en español o en inglés. Todos los envíos se revisan antes de publicarse, normalmente en unos días: comprobamos que la aventura sea tuya, que no copie texto ni tablas de libros oficiales y que respete las normas de la comunidad. Los campos con asterisco son obligatorios.</span><span lang="en">We accept adventures in Spanish or English. Every submission is reviewed before it goes live, usually within a few days: we check that the adventure is yours, that it does not copy text or tables from official books, and that it follows the community rules. Fields marked with an asterisk are required.</span><span lang="de">Wir nehmen Abenteuer auf Spanisch oder Englisch an. Jede Einreichung wird vor der Veröffentlichung geprüft, meist innerhalb weniger Tage: Wir prüfen, ob das Abenteuer von dir stammt, ob es keine Texte oder Tabellen aus offiziellen Büchern kopiert und ob es die Gemeinschaftsregeln einhält. Mit Sternchen markierte Felder sind Pflichtfelder.</span><span lang="fr">Nous acceptons les aventures en espagnol ou en anglais. Chaque envoi est relu avant publication, en général en quelques jours : nous vérifions que l’aventure est bien de vous, qu’elle ne copie ni texte ni tableau de livres officiels et qu’elle respecte les règles de la communauté. Les champs marqués d’un astérisque sont obligatoires.</span></p>
   </div>
 
   <form class="form" id="envio" name="envio-aventura" method="POST" action="/gracias.html" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" novalidate>
@@ -289,136 +321,196 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     <p class="hp"><label>No rellenes este campo / Leave empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
 
     <fieldset>
-      <legend><span lang="es">La aventura</span><span lang="en">The adventure</span></legend>
-      <div class="field"><label class="req" for="titulo"><span lang="es">Título</span><span lang="en">Title</span></label><input id="titulo" name="titulo" required maxlength="120"></div>
+      <legend><span lang="es">La aventura</span><span lang="en">The adventure</span><span lang="de">Das Abenteuer</span><span lang="fr">L’aventure</span></legend>
+      <div class="field"><label class="req" for="titulo"><span lang="es">Título</span><span lang="en">Title</span><span lang="de">Titel</span><span lang="fr">Titre</span></label><input id="titulo" name="titulo" required maxlength="120"></div>
       <div class="row">
-        <div class="field"><label class="req" for="idioma"><span lang="es">Idioma de la aventura</span><span lang="en">Language of the adventure</span></label>
-          <select id="idioma" name="idioma" required><option value="" data-en="Choose one">Elige uno</option><option value="es" data-en="Spanish">Español</option><option value="en" data-en="English">Inglés</option><option value="bi" data-en="Both (bilingual)">Ambos (bilingüe)</option></select></div>
-        <div class="field"><label class="req" for="tono"><span lang="es">Tono</span><span lang="en">Tone</span></label>
-          <select id="tono" name="tono" required><option value="" data-en="Choose one">Elige uno</option><option value="Épico" data-en="Epic">Épico</option><option value="Trágico" data-en="Tragic">Trágico</option><option value="Oscuro" data-en="Dark">Oscuro</option><option value="Ligero" data-en="Light-hearted">Ligero</option><option value="Misterio" data-en="Mystery">Misterio</option><option value="Horror" data-en="Horror">Horror</option></select></div>
+        <div class="field"><label class="req" for="idioma"><span lang="es">Idioma de la aventura</span><span lang="en">Language of the adventure</span><span lang="de">Sprache des Abenteuers</span><span lang="fr">Langue de l’aventure</span></label>
+          <select id="idioma" name="idioma" required><option value="" data-en="Choose one" data-de="Bitte wählen" data-fr="Choisissez">Elige uno</option><option value="es" data-en="Spanish" data-de="Spanisch" data-fr="Espagnol">Español</option><option value="en" data-en="English" data-de="Englisch" data-fr="Anglais">Inglés</option><option value="bi" data-en="Both (bilingual)" data-de="Beide (zweisprachig)" data-fr="Les deux (bilingue)">Ambos (bilingüe)</option></select></div>
+        <div class="field"><label class="req" for="tono"><span lang="es">Tono</span><span lang="en">Tone</span><span lang="de">Ton</span><span lang="fr">Ton</span></label>
+          <select id="tono" name="tono" required><option value="" data-en="Choose one" data-de="Bitte wählen" data-fr="Choisissez">Elige uno</option><option value="Épico" data-en="Epic" data-de="Episch" data-fr="Épique">Épico</option><option value="Trágico" data-en="Tragic" data-de="Tragisch" data-fr="Tragique">Trágico</option><option value="Oscuro" data-en="Dark" data-de="Düster" data-fr="Sombre">Oscuro</option><option value="Ligero" data-en="Light-hearted" data-de="Heiter" data-fr="Léger">Ligero</option><option value="Misterio" data-en="Mystery" data-de="Mysterium" data-fr="Mystère">Misterio</option><option value="Horror" data-en="Horror" data-de="Horror" data-fr="Horreur">Horror</option></select></div>
       </div>
-      <div class="field"><label class="req" for="resumen"><span lang="es">Resumen para la ficha</span><span lang="en">Summary for the catalogue</span></label><textarea id="resumen" name="resumen" required maxlength="600"></textarea><span class="hint"><span lang="es">En el idioma de la aventura. Hasta 600 caracteres, sin destripar el final.</span><span lang="en">In the language of the adventure. Up to 600 characters, no spoilers.</span></span></div>
-      <div class="field"><label for="resumenTrad"><span lang="es">Resumen en el otro idioma (opcional)</span><span lang="en">Summary in the other language (optional)</span></label><textarea id="resumenTrad" name="resumen-traduccion" maxlength="600"></textarea><span class="hint"><span lang="es">Si lo incluyes, la ficha se mostrará en los dos idiomas. Si no, la traduciremos nosotros.</span><span lang="en">If you include it, the entry will appear in both languages. If not, we will translate it.</span></span></div>
+      <div class="field"><label class="req" for="resumen"><span lang="es">Resumen para la ficha</span><span lang="en">Summary for the catalogue</span><span lang="de">Zusammenfassung für den Katalog</span><span lang="fr">Résumé pour la fiche</span></label><textarea id="resumen" name="resumen" required maxlength="600"></textarea><span class="hint"><span lang="es">En el idioma de la aventura. Hasta 600 caracteres, sin destripar el final.</span><span lang="en">In the language of the adventure. Up to 600 characters, no spoilers.</span><span lang="de">In der Sprache des Abenteuers. Bis zu 600 Zeichen, ohne das Ende zu verraten.</span><span lang="fr">Dans la langue de l’aventure. Jusqu’à 600 caractères, sans dévoiler la fin.</span></span></div>
+      <div class="field"><label for="resumenTrad"><span lang="es">Resumen en el otro idioma (opcional)</span><span lang="en">Summary in the other language (optional)</span><span lang="de">Zusammenfassung in der anderen Sprache (optional)</span><span lang="fr">Résumé dans l’autre langue (facultatif)</span></label><textarea id="resumenTrad" name="resumen-traduccion" maxlength="600"></textarea><span class="hint"><span lang="es">Si lo incluyes, la ficha se mostrará en los dos idiomas. Si no, la traduciremos nosotros.</span><span lang="en">If you include it, the entry will appear in both languages. If not, we will translate it.</span><span lang="de">Wenn du sie beifügst, erscheint der Eintrag in beiden Sprachen. Andernfalls übersetzen wir sie.</span><span lang="fr">Si vous l’ajoutez, la fiche apparaîtra dans les deux langues. Sinon, nous la traduirons.</span></span></div>
       <div class="row">
-        <div class="field"><label class="req" for="nivelIni"><span lang="es">Nivel inicial</span><span lang="en">Starting level</span></label><input id="nivelIni" name="nivel-inicial" type="number" min="1" max="20" required></div>
-        <div class="field"><label class="req" for="nivelFin"><span lang="es">Nivel final</span><span lang="en">Final level</span></label><input id="nivelFin" name="nivel-final" type="number" min="1" max="20" required></div>
-        <div class="field"><label class="req" for="jugadores"><span lang="es">Jugadores</span><span lang="en">Players</span></label><input id="jugadores" name="jugadores" placeholder="4–5" required maxlength="10"></div>
-        <div class="field"><label class="req" for="sesiones"><span lang="es">Sesiones aprox.</span><span lang="en">Approx. sessions</span></label><input id="sesiones" name="sesiones" type="number" min="1" max="99" required></div>
+        <div class="field"><label class="req" for="nivelIni"><span lang="es">Nivel inicial</span><span lang="en">Starting level</span><span lang="de">Anfangsstufe</span><span lang="fr">Niveau de départ</span></label><input id="nivelIni" name="nivel-inicial" type="number" min="1" max="20" required></div>
+        <div class="field"><label class="req" for="nivelFin"><span lang="es">Nivel final</span><span lang="en">Final level</span><span lang="de">Endstufe</span><span lang="fr">Niveau final</span></label><input id="nivelFin" name="nivel-final" type="number" min="1" max="20" required></div>
+        <div class="field"><label class="req" for="jugadores"><span lang="es">Jugadores</span><span lang="en">Players</span><span lang="de">Spieler</span><span lang="fr">Joueurs</span></label><input id="jugadores" name="jugadores" placeholder="4–5" required maxlength="10"></div>
+        <div class="field"><label class="req" for="sesiones"><span lang="es">Sesiones aprox.</span><span lang="en">Approx. sessions</span><span lang="de">Sitzungen (ca.)</span><span lang="fr">Séances (env.)</span></label><input id="sesiones" name="sesiones" type="number" min="1" max="99" required></div>
       </div>
       <div class="row">
-        <div class="field"><label for="region"><span lang="es">Región de Azeroth</span><span lang="en">Region of Azeroth</span></label><input id="region" name="region" maxlength="60"></div>
-        <div class="field"><label for="etiquetas"><span lang="es">Palabras clave</span><span lang="en">Keywords</span></label><input id="etiquetas" name="etiquetas" maxlength="160" data-ph-es="asedio, no muertos, viaje" data-ph-en="siege, undead, journey"></div>
+        <div class="field"><label for="region"><span lang="es">Región de Azeroth</span><span lang="en">Region of Azeroth</span><span lang="de">Region von Azeroth</span><span lang="fr">Région d’Azeroth</span></label><input id="region" name="region" maxlength="60"></div>
+        <div class="field"><label for="etiquetas"><span lang="es">Palabras clave</span><span lang="en">Keywords</span><span lang="de">Stichwörter</span><span lang="fr">Mots-clés</span></label><input id="etiquetas" name="etiquetas" maxlength="160" data-ph-es="asedio, no muertos, viaje" data-ph-en="siege, undead, journey" data-ph-de="Belagerung, Untote, Reise" data-ph-fr="siège, morts-vivants, voyage"></div>
       </div>
-      <div class="field"><label class="req" for="archivo"><span lang="es">Archivo de la aventura (PDF)</span><span lang="en">Adventure file (PDF)</span></label><input id="archivo" name="archivo" type="file" accept="application/pdf,.pdf" required><span class="hint"><span lang="es">Un único PDF de menos de 8 MB. Si pesa más, sube un PDF corto con el enlace a la versión completa en Google Drive, itch.io u otro servicio.</span><span lang="en">A single PDF under 8 MB. If yours is larger, upload a short PDF with a link to the full version on Google Drive, itch.io or similar.</span></span></div>
+      <div class="field"><label class="req" for="archivo"><span lang="es">Archivo de la aventura (PDF)</span><span lang="en">Adventure file (PDF)</span><span lang="de">Abenteuerdatei (PDF)</span><span lang="fr">Fichier de l’aventure (PDF)</span></label><input id="archivo" name="archivo" type="file" accept="application/pdf,.pdf" required><span class="hint"><span lang="es">Un único PDF de menos de 8 MB. Si pesa más, sube un PDF corto con el enlace a la versión completa en Google Drive, itch.io u otro servicio.</span><span lang="en">A single PDF under 8 MB. If yours is larger, upload a short PDF with a link to the full version on Google Drive, itch.io or similar.</span><span lang="de">Eine einzelne PDF-Datei unter 8 MB. Ist deine größer, lade eine kurze PDF mit einem Link zur vollständigen Fassung auf Google Drive, itch.io oder einem ähnlichen Dienst hoch.</span><span lang="fr">Un seul PDF de moins de 8 Mo. S’il est plus lourd, envoyez un PDF court avec un lien vers la version complète sur Google Drive, itch.io ou un service similaire.</span></span></div>
     </fieldset>
 
     <fieldset>
-      <legend><span lang="es">Sobre ti</span><span lang="en">About you</span></legend>
+      <legend><span lang="es">Sobre ti</span><span lang="en">About you</span><span lang="de">Über dich</span><span lang="fr">À propos de vous</span></legend>
       <div class="row">
-        <div class="field"><label class="req" for="autor"><span lang="es">Nombre o seudónimo para los créditos</span><span lang="en">Name or pen name for the credits</span></label><input id="autor" name="autor" required maxlength="80"></div>
-        <div class="field"><label class="req" for="email"><span lang="es">Correo de contacto</span><span lang="en">Contact email</span></label><input id="email" name="email" type="email" required maxlength="120"><span class="hint"><span lang="es">Solo para avisarte de la revisión. Nunca se publica.</span><span lang="en">Only used to tell you about the review. Never published.</span></span></div>
+        <div class="field"><label class="req" for="autor"><span lang="es">Nombre o seudónimo para los créditos</span><span lang="en">Name or pen name for the credits</span><span lang="de">Name oder Pseudonym für die Credits</span><span lang="fr">Nom ou pseudonyme pour les crédits</span></label><input id="autor" name="autor" required maxlength="80"></div>
+        <div class="field"><label class="req" for="email"><span lang="es">Correo de contacto</span><span lang="en">Contact email</span><span lang="de">Kontakt-E-Mail</span><span lang="fr">E-mail de contact</span></label><input id="email" name="email" type="email" required maxlength="120"><span class="hint"><span lang="es">Solo para avisarte de la revisión. Nunca se publica.</span><span lang="en">Only used to tell you about the review. Never published.</span><span lang="de">Nur, um dich über die Prüfung zu informieren. Wird nie veröffentlicht.</span><span lang="fr">Utilisé uniquement pour vous informer de la relecture. Jamais publié.</span></span></div>
       </div>
     </fieldset>
 
     <fieldset>
-      <legend class="req"><span lang="es">Licencia de tu aventura</span><span lang="en">Licence for your adventure</span></legend>
-      <p class="hint"><span lang="es">Sigues siendo el autor. La licencia indica qué pueden hacer los demás con tu texto.</span><span lang="en">You remain the author. The licence tells others what they may do with your text.</span> <a href="#licencias"><span lang="es">Más información</span><span lang="en">Learn more</span></a></p>
-      <label class="radio"><input type="radio" name="licencia" value="CC BY-NC-SA 4.0" required checked><span><b>CC BY-NC-SA 4.0</b> · <span lang="es">Recomendada</span><span lang="en">Recommended</span><small><span lang="es">Cualquiera puede descargar, compartir y adaptar tu aventura, sin fines comerciales, citándote y publicando sus versiones con la misma licencia.</span><span lang="en">Anyone may download, share and adapt your adventure for non-commercial purposes, crediting you and releasing their versions under the same licence.</span></small></span></label>
-      <label class="radio"><input type="radio" name="licencia" value="CC BY-NC 4.0"><span><b>CC BY-NC 4.0</b><small><span lang="es">Como la anterior, pero las adaptaciones pueden usar otra licencia no comercial.</span><span lang="en">As above, but adaptations may use a different non-commercial licence.</span></small></span></label>
-      <label class="radio"><input type="radio" name="licencia" value="CC0 1.0"><span><b>CC0 1.0</b> · <span lang="es">Dominio público</span><span lang="en">Public domain</span><small><span lang="es">Renuncias a todos tus derechos en la medida que permita la ley. Cualquiera puede usarla sin citarte.</span><span lang="en">You waive all your rights to the extent the law allows. Anyone may use it without crediting you.</span></small></span></label>
+      <legend class="req"><span lang="es">Licencia de tu aventura</span><span lang="en">Licence for your adventure</span><span lang="de">Lizenz für dein Abenteuer</span><span lang="fr">Licence de votre aventure</span></legend>
+      <p class="hint"><span lang="es">Sigues siendo el autor. La licencia indica qué pueden hacer los demás con tu texto.</span><span lang="en">You remain the author. The licence tells others what they may do with your text.</span><span lang="de">Du bleibst der Autor. Die Lizenz legt fest, was andere mit deinem Text tun dürfen.</span><span lang="fr">Vous restez l’auteur. La licence indique aux autres ce qu’ils peuvent faire de votre texte.</span> <a href="#licencias"><span lang="es">Más información</span><span lang="en">Learn more</span><span lang="de">Mehr erfahren</span><span lang="fr">En savoir plus</span></a></p>
+      <label class="radio"><input type="radio" name="licencia" value="CC BY-NC-SA 4.0" required checked><span><b>CC BY-NC-SA 4.0</b> · <span lang="es">Recomendada</span><span lang="en">Recommended</span><span lang="de">Empfohlen</span><span lang="fr">Recommandée</span><small><span lang="es">Cualquiera puede descargar, compartir y adaptar tu aventura, sin fines comerciales, citándote y publicando sus versiones con la misma licencia.</span><span lang="en">Anyone may download, share and adapt your adventure for non-commercial purposes, crediting you and releasing their versions under the same licence.</span><span lang="de">Jeder darf dein Abenteuer herunterladen, teilen und bearbeiten, nicht kommerziell, mit Namensnennung und unter derselben Lizenz für eigene Fassungen.</span><span lang="fr">Chacun peut télécharger, partager et adapter votre aventure à des fins non commerciales, en vous citant et en publiant ses versions sous la même licence.</span></small></span></label>
+      <label class="radio"><input type="radio" name="licencia" value="CC BY-NC 4.0"><span><b>CC BY-NC 4.0</b><small><span lang="es">Como la anterior, pero las adaptaciones pueden usar otra licencia no comercial.</span><span lang="en">As above, but adaptations may use a different non-commercial licence.</span><span lang="de">Wie oben, aber Bearbeitungen dürfen eine andere nicht kommerzielle Lizenz verwenden.</span><span lang="fr">Comme la précédente, mais les adaptations peuvent utiliser une autre licence non commerciale.</span></small></span></label>
+      <label class="radio"><input type="radio" name="licencia" value="CC0 1.0"><span><b>CC0 1.0</b> · <span lang="es">Dominio público</span><span lang="en">Public domain</span><span lang="de">Gemeinfrei</span><span lang="fr">Domaine public</span><small><span lang="es">Renuncias a todos tus derechos en la medida que permita la ley. Cualquiera puede usarla sin citarte.</span><span lang="en">You waive all your rights to the extent the law allows. Anyone may use it without crediting you.</span><span lang="de">Du verzichtest im gesetzlich zulässigen Umfang auf alle deine Rechte. Jeder darf es ohne Namensnennung nutzen.</span><span lang="fr">Vous renoncez à tous vos droits dans la mesure permise par la loi. Chacun peut l’utiliser sans vous citer.</span></small></span></label>
     </fieldset>
 
     <fieldset>
-      <legend><span lang="es">Declaraciones</span><span lang="en">Declarations</span></legend>
-      <label class="check"><input type="checkbox" name="decl-autoria" value="si" required><span class="req"><span lang="es">Soy el autor o autora de esta aventura, o cuento con permiso de todas las personas que han participado en ella.</span><span lang="en">I am the author of this adventure, or I have permission from everyone who contributed to it.</span></span></label>
-      <label class="check"><input type="checkbox" name="decl-oficial" value="si" required><span class="req"><span lang="es">La aventura no copia texto, tablas, perfiles de criaturas, mapas ni ilustraciones de libros o juegos oficiales. Cuando necesita esos datos, remite al manual correspondiente.</span><span lang="en">The adventure does not copy text, tables, stat blocks, maps or artwork from official books or games. Where it needs that material, it refers to the relevant book.</span></span></label>
-      <label class="check"><input type="checkbox" name="decl-cesion" value="si" required><span class="req"><span lang="es">Concedo a Códice Errante una licencia gratuita, mundial y no exclusiva para alojar, mostrar y distribuir mi aventura, y la publico bajo la licencia que he elegido. Conservo la autoría y puedo pedir su retirada del archivo en cualquier momento.</span><span lang="en">I grant Códice Errante a free, worldwide, non-exclusive licence to host, display and distribute my adventure, and I release it under the licence I have chosen. I keep authorship and may ask for its removal from the archive at any time.</span></span></label>
-      <label class="check"><input type="checkbox" name="decl-gratis" value="si" required><span class="req"><span lang="es">Entiendo que la aventura será siempre gratuita, que no recibiré pago por ella y que es contenido de fans no oficial.</span><span lang="en">I understand the adventure will always be free, that I will not be paid for it, and that it is unofficial fan content.</span></span></label>
-      <label class="check"><input type="checkbox" name="decl-privacidad" value="si" required><span class="req"><span lang="es">He leído la <a href="#privacidad">política de privacidad</a> y acepto que se use mi correo para gestionar este envío.</span><span lang="en">I have read the <a href="#privacidad">privacy policy</a> and agree to my email being used to handle this submission.</span></span></label>
+      <legend><span lang="es">Declaraciones</span><span lang="en">Declarations</span><span lang="de">Erklärungen</span><span lang="fr">Déclarations</span></legend>
+      <label class="check"><input type="checkbox" name="decl-autoria" value="si" required><span class="req"><span lang="es">Soy el autor o autora de esta aventura, o cuento con permiso de todas las personas que han participado en ella.</span><span lang="en">I am the author of this adventure, or I have permission from everyone who contributed to it.</span><span lang="de">Ich bin der Autor bzw. die Autorin dieses Abenteuers oder habe die Erlaubnis aller, die daran mitgewirkt haben.</span><span lang="fr">Je suis l’auteur ou l’autrice de cette aventure, ou j’ai l’accord de toutes les personnes qui y ont participé.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-oficial" value="si" required><span class="req"><span lang="es">La aventura no copia texto, tablas, perfiles de criaturas, mapas ni ilustraciones de libros o juegos oficiales, salvo material del SRD 5.2. Si usa el SRD 5.2, incluye su frase de atribución. Cuando necesita otros datos, remite al manual correspondiente.</span><span lang="en">The adventure does not copy text, tables, stat blocks, maps or artwork from official books or games, except material from the SRD 5.2. If it uses the SRD 5.2, it includes its attribution statement. Where it needs other material, it refers to the relevant book.</span><span lang="de">Das Abenteuer kopiert keine Texte, Tabellen, Werteblöcke, Karten oder Illustrationen aus offiziellen Büchern oder Spielen, außer Material aus dem SRD 5.2. Verwendet es das SRD 5.2, enthält es dessen Namensnennung. Für anderes Material verweist es auf das jeweilige Buch.</span><span lang="fr">L’aventure ne copie ni texte, ni tableau, ni profil de créature, ni carte, ni illustration de livres ou jeux officiels, sauf le contenu du SRD 5.2. Si elle utilise le SRD 5.2, elle inclut sa mention d’attribution. Pour tout autre contenu, elle renvoie au livre concerné.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-imagenes" value="si" required><span class="req"><span lang="es">Las ilustraciones son mías, de dominio público o tienen una licencia que permite publicarlas aquí. No incluyen arte oficial ni logotipos o emblemas de Blizzard o Wizards (por ejemplo, los escudos de la Horda o de la Alianza). Si alguna está generada con IA, lo indico en los créditos.</span><span lang="en">The artwork is mine, in the public domain or under a licence that allows publishing it here. It includes no official artwork and no Blizzard or Wizards logos or emblems (for example, the Horde or Alliance crests). If any of it is AI-generated, I say so in the credits.</span><span lang="de">Die Illustrationen stammen von mir, sind gemeinfrei oder stehen unter einer Lizenz, die ihre Veröffentlichung hier erlaubt. Sie enthalten keine offiziellen Illustrationen und keine Logos oder Wappen von Blizzard oder Wizards (zum Beispiel die Wappen der Horde oder der Allianz). Ist eine davon mit KI erzeugt, gebe ich das in den Credits an.</span><span lang="fr">Les illustrations sont de moi, dans le domaine public ou sous une licence qui permet de les publier ici. Elles ne contiennent ni illustration officielle, ni logo ou emblème de Blizzard ou de Wizards (par exemple, les blasons de la Horde ou de l’Alliance). Si l’une d’elles est générée par IA, je l’indique dans les crédits.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-cesion" value="si" required><span class="req"><span lang="es">Concedo a Códice Errante una licencia gratuita, mundial y no exclusiva para alojar, mostrar y distribuir mi aventura, aunque la web llegue a financiarse con publicidad, y la publico bajo la licencia que he elegido. Conservo la autoría y puedo pedir su retirada del archivo en cualquier momento.</span><span lang="en">I grant Códice Errante a free, worldwide, non-exclusive licence to host, display and distribute my adventure, even if the site comes to be funded by advertising, and I release it under the licence I have chosen. I keep authorship and may ask for its removal from the archive at any time.</span><span lang="de">Ich räume Códice Errante eine kostenlose, weltweite, nicht ausschließliche Lizenz ein, mein Abenteuer zu hosten, anzuzeigen und zu verbreiten, auch wenn sich die Website eines Tages durch Werbung finanziert, und veröffentliche es unter der gewählten Lizenz. Ich bleibe Urheber und kann jederzeit die Entfernung aus dem Archiv verlangen.</span><span lang="fr">J’accorde à Códice Errante une licence gratuite, mondiale et non exclusive pour héberger, afficher et diffuser mon aventure, même si le site vient à être financé par la publicité, et je la publie sous la licence choisie. Je reste l’auteur et je peux demander son retrait de l’archive à tout moment.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-gratis" value="si" required><span class="req"><span lang="es">Entiendo que la aventura será siempre gratuita, que no recibiré pago por ella y que es contenido de fans no oficial.</span><span lang="en">I understand the adventure will always be free, that I will not be paid for it, and that it is unofficial fan content.</span><span lang="de">Mir ist bewusst, dass das Abenteuer immer kostenlos sein wird, dass ich dafür nicht bezahlt werde und dass es sich um inoffiziellen Fan-Content handelt.</span><span lang="fr">Je comprends que l’aventure sera toujours gratuite, que je ne serai pas payé pour elle et qu’il s’agit d’un contenu de fan non officiel.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-privacidad" value="si" required><span class="req"><span lang="es">He leído la <a href="#privacidad">política de privacidad</a> y acepto que se use mi correo para gestionar este envío.</span><span lang="en">I have read the <a href="#privacidad">privacy policy</a> and agree to my email being used to handle this submission.</span><span lang="de">Ich habe die <a href="#privacidad">Datenschutzerklärung</a> gelesen und bin damit einverstanden, dass meine E-Mail zur Bearbeitung dieser Einreichung verwendet wird.</span><span lang="fr">J’ai lu la <a href="#privacidad">politique de confidentialité</a> et j’accepte que mon e-mail soit utilisé pour traiter cet envoi.</span></span></label>
     </fieldset>
 
     <div class="notice err" id="formErr" role="alert" hidden></div>
     <div class="notice" id="formOk" role="status" hidden></div>
-    <div><button class="btn primary" type="submit"><span lang="es">Enviar a revisión</span><span lang="en">Send for review</span></button></div>
+    <div><button class="btn primary" type="submit"><span lang="es">Enviar a revisión</span><span lang="en">Send for review</span><span lang="de">Zur Prüfung senden</span><span lang="fr">Envoyer en relecture</span></button></div>
   </form>
 </section>
 
 <section id="licencias">
   <div class="head">
-    <h2><span lang="es">Licencias y cesión de derechos</span><span lang="en">Licences and rights</span></h2>
-    <p><span lang="es">Quien envía una aventura no cede su propiedad. Concede permisos para que el archivo la distribuya y elige una licencia Creative Commons que dice a cada lector qué puede hacer con ella.</span><span lang="en">Submitting an adventure does not transfer its ownership. The author grants the archive permission to distribute it and chooses a Creative Commons licence that tells every reader what they may do with it.</span></p>
+    <h2><span lang="es">Licencias y cesión de derechos</span><span lang="en">Licences and rights</span><span lang="de">Lizenzen und Rechte</span><span lang="fr">Licences et droits</span></h2>
+    <p><span lang="es">Quien envía una aventura no cede su propiedad. Concede permisos para que el archivo la distribuya y elige una licencia Creative Commons que dice a cada lector qué puede hacer con ella.</span><span lang="en">Submitting an adventure does not transfer its ownership. The author grants the archive permission to distribute it and chooses a Creative Commons licence that tells every reader what they may do with it.</span><span lang="de">Wer ein Abenteuer einreicht, überträgt nicht sein Eigentum daran. Der Autor erlaubt dem Archiv, es zu verbreiten, und wählt eine Creative-Commons-Lizenz, die jedem Leser sagt, was er damit tun darf.</span><span lang="fr">Proposer une aventure n’en transfère pas la propriété. L’auteur autorise l’archive à la diffuser et choisit une licence Creative Commons qui indique à chaque lecteur ce qu’il peut en faire.</span></p>
   </div>
   <div class="legal">
-    <details open><summary><span lang="es">Qué puedes hacer con una aventura descargada</span><span lang="en">What you can do with a downloaded adventure</span></summary><div class="in">
+    <details open><summary><span lang="es">Qué puedes hacer con una aventura descargada</span><span lang="en">What you can do with a downloaded adventure</span><span lang="de">Was du mit einem heruntergeladenen Abenteuer tun darfst</span><span lang="fr">Ce que vous pouvez faire d’une aventure téléchargée</span></summary><div class="in">
       <ul lang="es">
         <li>Jugarla, imprimirla y compartirla con tu grupo, siempre gratis.</li>
         <li>Con CC BY-NC-SA 4.0 o CC BY-NC 4.0: adaptarla y publicar tu versión sin fines comerciales, citando a su autor. Con la primera, tu versión debe usar la misma licencia.</li>
-        <li>Con CC0 1.0: usarla como quieras, sin obligación de citar.</li>
+        <li>Con CC0 1.0: usar su texto original como quieras, sin obligación de citar. La dedicación no alcanza al material de terceros que contenga (véase abajo).</li>
         <li>En ningún caso puedes venderla. Aunque la licencia lo permitiera, el contenido ambientado en Azeroth sigue sujeto a los derechos de terceros.</li>
         <li>Puedes traducirla al otro idioma del archivo y enviarnos la traducción, citando al autor original, siempre que la licencia permita adaptaciones.</li>
       </ul>
       <ul lang="en">
         <li>Play it, print it and share it with your group, always for free.</li>
         <li>Under CC BY-NC-SA 4.0 or CC BY-NC 4.0: adapt it and publish your version for non-commercial purposes, crediting the author. Under the first, your version must use the same licence.</li>
-        <li>Under CC0 1.0: use it however you like, with no obligation to credit.</li>
+        <li>Under CC0 1.0: use its original text however you like, with no obligation to credit. The dedication does not cover any third-party material it contains (see below).</li>
         <li>You may never sell it. Even where the licence would allow it, content set in Azeroth remains subject to third-party rights.</li>
         <li>You may translate it into the archive's other language and send us the translation, crediting the original author, as long as the licence allows adaptations.</li>
+      </ul><ul lang="de">
+        <li>Es spielen, ausdrucken und mit deiner Gruppe teilen, immer kostenlos.</li>
+        <li>Mit CC BY-NC-SA 4.0 oder CC BY-NC 4.0: es bearbeiten und deine Fassung nicht kommerziell veröffentlichen, mit Nennung des Autors. Bei der ersten muss deine Fassung dieselbe Lizenz verwenden.</li>
+        <li>Mit CC0 1.0: den Originaltext beliebig nutzen, ohne Pflicht zur Namensnennung. Die Widmung gilt nicht für enthaltenes Material Dritter (siehe unten).</li>
+        <li>Verkaufen darfst du es nie. Selbst wenn die Lizenz es erlauben würde, unterliegen Inhalte aus Azeroth weiterhin Rechten Dritter.</li>
+        <li>Du darfst es in die andere Sprache des Archivs übersetzen und uns die Übersetzung schicken, mit Nennung des ursprünglichen Autors, sofern die Lizenz Bearbeitungen erlaubt.</li>
+      </ul><ul lang="fr">
+        <li>La jouer, l’imprimer et la partager avec votre groupe, toujours gratuitement.</li>
+        <li>Sous CC BY-NC-SA 4.0 ou CC BY-NC 4.0 : l’adapter et publier votre version à des fins non commerciales, en citant l’auteur. Avec la première, votre version doit utiliser la même licence.</li>
+        <li>Sous CC0 1.0 : utiliser son texte original comme vous le souhaitez, sans obligation de citer. La dédicace ne couvre pas le contenu de tiers qu’elle contient (voir ci-dessous).</li>
+        <li>Vous ne pouvez jamais la vendre. Même si la licence le permettait, le contenu situé en Azeroth reste soumis aux droits de tiers.</li>
+        <li>Vous pouvez la traduire dans l’autre langue de l’archive et nous envoyer la traduction, en citant l’auteur d’origine, si la licence autorise les adaptations.</li>
       </ul>
     </div></details>
-    <details><summary><span lang="es">Qué permiso concede el autor al archivo</span><span lang="en">What permission the author grants the archive</span></summary><div class="in">
-      <p lang="es">Una licencia gratuita, mundial y no exclusiva para alojar, mostrar y distribuir la aventura en esta web. El autor puede publicarla también en otros sitios y puede pedir su retirada del archivo cuando quiera. La retirada no afecta a las copias que otras personas ya hayan descargado legítimamente bajo la licencia Creative Commons, porque esas licencias no se pueden revocar.</p>
-      <p lang="en">A free, worldwide, non-exclusive licence to host, display and distribute the adventure on this site. The author may also publish it elsewhere and may ask for its removal from the archive at any time. Removal does not affect copies other people have already downloaded lawfully under the Creative Commons licence, because those licences cannot be revoked.</p>
+    <details open><summary><span lang="es">Material de terceros que contienen las aventuras</span><span lang="en">Third-party material in the adventures</span><span lang="de">Material Dritter in den Abenteuern</span><span lang="fr">Contenu de tiers dans les aventures</span></summary><div class="in">
+      <p lang="es">La licencia que elige cada autor solo cubre lo que ha creado él. Las aventuras del archivo contienen además material ajeno, que conserva sus propios derechos:</p>
+      <ul lang="es">
+        <li><b>Reglas del SRD 5.2.</b> Las fichas y mecánicas de D&amp;D 2024 proceden del System Reference Document 5.2 de Wizards of the Coast, publicado con licencia CC BY 4.0. Quien lo reutilice debe mantener su frase de atribución, aunque la aventura sea CC0.</li>
+        <li><b>Warcraft.</b> Los nombres, lugares, personajes y facciones de Azeroth pertenecen a Blizzard Entertainment. Blizzard no ofrece una licencia pública para obras escritas de fans: su uso aquí se basa en la tolerancia hacia el contenido gratuito y sin ánimo de lucro, y Blizzard puede pedir su retirada en cualquier momento.</li>
+        <li><b>Ilustraciones.</b> Son de cada autor o tienen licencia compatible. No se aceptan arte oficial, logotipos ni emblemas de Blizzard o Wizards.</li>
+      </ul>
+      <p lang="en">The licence each author chooses covers only what they created. The archive's adventures also contain material by others, which keeps its own rights:</p><p lang="de">Die Lizenz, die jeder Autor wählt, gilt nur für das, was er selbst geschaffen hat. Die Abenteuer im Archiv enthalten außerdem fremdes Material, das seine eigenen Rechte behält:</p><p lang="fr">La licence choisie par chaque auteur ne couvre que ce qu’il a créé. Les aventures de l’archive contiennent aussi du contenu d’autrui, qui conserve ses propres droits :</p>
+      <ul lang="en">
+        <li><b>SRD 5.2 rules.</b> D&amp;D 2024 stat blocks and mechanics come from Wizards of the Coast's System Reference Document 5.2, released under CC BY 4.0. Anyone reusing it must keep its attribution statement, even if the adventure is CC0.</li>
+        <li><b>Warcraft.</b> The names, places, characters and factions of Azeroth belong to Blizzard Entertainment. Blizzard offers no public licence for written fan works: their use here relies on its tolerance of free, non-commercial content, and Blizzard may request removal at any time.</li>
+        <li><b>Artwork.</b> It belongs to each author or carries a compatible licence. Official artwork and Blizzard or Wizards logos or emblems are not accepted.</li>
+      </ul><ul lang="de">
+        <li><b>Regeln aus dem SRD 5.2.</b> Werteblöcke und Mechaniken für D&amp;D 2024 stammen aus dem System Reference Document 5.2 von Wizards of the Coast, veröffentlicht unter CC BY 4.0. Wer es weiterverwendet, muss dessen Namensnennung beibehalten, auch wenn das Abenteuer CC0 ist.</li>
+        <li><b>Warcraft.</b> Namen, Orte, Figuren und Fraktionen von Azeroth gehören Blizzard Entertainment. Blizzard bietet keine öffentliche Lizenz für geschriebene Fan-Werke: Ihre Nutzung hier beruht auf der Duldung kostenloser, nicht kommerzieller Inhalte, und Blizzard kann jederzeit die Entfernung verlangen.</li>
+        <li><b>Illustrationen.</b> Sie gehören dem jeweiligen Autor oder stehen unter einer passenden Lizenz. Offizielle Illustrationen sowie Logos oder Wappen von Blizzard oder Wizards werden nicht angenommen.</li>
+      </ul><ul lang="fr">
+        <li><b>Règles du SRD 5.2.</b> Les profils et mécaniques de D&amp;D 2024 proviennent du System Reference Document 5.2 de Wizards of the Coast, publié sous CC BY 4.0. Quiconque le réutilise doit conserver sa mention d’attribution, même si l’aventure est en CC0.</li>
+        <li><b>Warcraft.</b> Les noms, lieux, personnages et factions d’Azeroth appartiennent à Blizzard Entertainment. Blizzard n’offre aucune licence publique pour les œuvres écrites de fans : leur usage ici repose sur sa tolérance envers le contenu gratuit et non commercial, et Blizzard peut en demander le retrait à tout moment.</li>
+        <li><b>Illustrations.</b> Elles appartiennent à chaque auteur ou sont sous une licence compatible. Les illustrations officielles ainsi que les logos ou emblèmes de Blizzard ou de Wizards ne sont pas acceptés.</li>
+      </ul>
+      <blockquote>This work includes material from the System Reference Document 5.2 (“SRD 5.2”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.</blockquote>
     </div></details>
-    <details><summary><span lang="es">Por qué no aceptamos material oficial</span><span lang="en">Why we do not accept official material</span></summary><div class="in">
-      <p lang="es">La política de contenido de fans de Wizards of the Coast permite crear contenido gratuito con su propiedad intelectual, pero excluye la copia literal de reglas o libros. Blizzard no ha publicado una política equivalente para obras escritas. Por eso solo publicamos aventuras originales que remiten a los manuales en lugar de reproducirlos. Las reglas del SRD 5.2 sí pueden citarse, porque se distribuyen con licencia CC BY 4.0.</p>
-      <p lang="en">Wizards of the Coast's Fan Content Policy allows free fan content using its intellectual property, but excludes verbatim copying of rules or books. Blizzard has not published an equivalent policy for written works. That is why we only publish original adventures that refer to the books rather than reproducing them. Rules from the SRD 5.2 may be quoted, as they are released under CC BY 4.0.</p>
+    <details><summary><span lang="es">Qué permiso concede el autor al archivo</span><span lang="en">What permission the author grants the archive</span><span lang="de">Welche Erlaubnis der Autor dem Archiv erteilt</span><span lang="fr">Quelle autorisation l’auteur accorde à l’archive</span></summary><div class="in">
+      <p lang="es">Una licencia gratuita, mundial y no exclusiva para alojar, mostrar y distribuir la aventura en esta web, también si la web llega a financiarse con publicidad. Las aventuras seguirán siendo siempre gratuitas y la publicidad nunca aparecerá dentro de los PDF. El autor puede publicarla también en otros sitios y puede pedir su retirada del archivo cuando quiera. La retirada no afecta a las copias que otras personas ya hayan descargado legítimamente bajo la licencia Creative Commons, porque esas licencias no se pueden revocar.</p>
+      <p lang="en">A free, worldwide, non-exclusive licence to host, display and distribute the adventure on this site, including if the site comes to be funded by advertising. The adventures will always remain free, and advertising will never appear inside the PDFs. The author may also publish it elsewhere and may ask for its removal from the archive at any time. Removal does not affect copies other people have already downloaded lawfully under the Creative Commons licence, because those licences cannot be revoked.</p><p lang="de">Eine kostenlose, weltweite, nicht ausschließliche Lizenz, das Abenteuer auf dieser Website zu hosten, anzuzeigen und zu verbreiten, auch wenn sich die Website eines Tages durch Werbung finanziert. Die Abenteuer bleiben immer kostenlos, und Werbung erscheint nie in den PDFs. Der Autor kann es auch anderswo veröffentlichen und jederzeit die Entfernung aus dem Archiv verlangen. Die Entfernung betrifft keine Kopien, die andere bereits rechtmäßig unter der Creative-Commons-Lizenz heruntergeladen haben, denn diese Lizenzen sind unwiderruflich.</p><p lang="fr">Une licence gratuite, mondiale et non exclusive pour héberger, afficher et diffuser l’aventure sur ce site, y compris si le site vient à être financé par la publicité. Les aventures resteront toujours gratuites, et la publicité n’apparaîtra jamais dans les PDF. L’auteur peut aussi la publier ailleurs et demander son retrait de l’archive quand il le souhaite. Le retrait n’affecte pas les copies que d’autres ont déjà téléchargées légalement sous la licence Creative Commons, car ces licences sont irrévocables.</p>
+    </div></details>
+    <details><summary><span lang="es">Por qué no aceptamos material oficial</span><span lang="en">Why we do not accept official material</span><span lang="de">Warum wir kein offizielles Material annehmen</span><span lang="fr">Pourquoi nous n’acceptons pas de contenu officiel</span></summary><div class="in">
+      <p lang="es">La política de contenido de fans de Wizards of the Coast permite crear contenido gratuito con su propiedad intelectual, pero excluye la copia literal de reglas o libros. Blizzard no ha publicado una política equivalente para obras escritas. Por eso solo publicamos aventuras originales que remiten a los manuales en lugar de reproducirlos, sin logotipos, emblemas ni arte oficial de ninguna de las dos compañías. Las reglas del SRD 5.2 sí pueden usarse, porque se distribuyen con licencia CC BY 4.0, siempre que se incluya su frase de atribución.</p>
+      <p lang="en">Wizards of the Coast's Fan Content Policy allows free fan content using its intellectual property, but excludes verbatim copying of rules or books. Blizzard has not published an equivalent policy for written works. That is why we only publish original adventures that refer to the books rather than reproducing them, with no logos, emblems or official artwork from either company. Rules from the SRD 5.2 may be used, as they are released under CC BY 4.0, provided its attribution statement is included.</p><p lang="de">Die Fan-Content-Richtlinie von Wizards of the Coast erlaubt kostenlose Fan-Inhalte mit seinem geistigen Eigentum, schließt aber das wörtliche Kopieren von Regeln oder Büchern aus. Blizzard hat keine vergleichbare Richtlinie für geschriebene Werke veröffentlicht. Deshalb veröffentlichen wir nur eigene Abenteuer, die auf die Bücher verweisen, statt sie wiederzugeben, ohne Logos, Wappen oder offizielle Illustrationen beider Unternehmen. Regeln aus dem SRD 5.2 dürfen verwendet werden, da sie unter CC BY 4.0 stehen, sofern dessen Namensnennung enthalten ist.</p><p lang="fr">La politique de contenu de fans de Wizards of the Coast autorise le contenu de fans gratuit utilisant sa propriété intellectuelle, mais exclut la copie littérale de règles ou de livres. Blizzard n’a publié aucune politique équivalente pour les œuvres écrites. C’est pourquoi nous ne publions que des aventures originales qui renvoient aux livres au lieu de les reproduire, sans logos, emblèmes ni illustrations officielles de l’une ou l’autre société. Les règles du SRD 5.2 peuvent être utilisées, car elles sont publiées sous CC BY 4.0, à condition d’inclure sa mention d’attribution.</p>
     </div></details>
   </div>
 </section>
 
 <section id="legal">
   <div class="head">
-    <h2><span lang="es">Aviso legal y normas</span><span lang="en">Legal notice and rules</span></h2>
-    <p lang="en">This English translation is provided for convenience. In case of any discrepancy, the Spanish version prevails.</p>
+    <h2><span lang="es">Aviso legal y normas</span><span lang="en">Legal notice and rules</span><span lang="de">Impressum und Regeln</span><span lang="fr">Mentions légales et règles</span></h2>
+    <p lang="en">This English translation is provided for convenience. In case of any discrepancy, the Spanish version prevails.</p><p lang="de">Diese deutsche Übersetzung dient nur der Information. Bei Abweichungen gilt die spanische Fassung.</p><p lang="fr">Cette traduction française est fournie à titre indicatif. En cas de divergence, la version espagnole prévaut.</p>
   </div>
   <div class="legal">
-    <details open><summary><span lang="es">Contenido de fans no oficial</span><span lang="en">Unofficial fan content</span></summary><div class="in">
+    <details open><summary><span lang="es">Contenido de fans no oficial</span><span lang="en">Unofficial fan content</span><span lang="de">Inoffizieller Fan-Content</span><span lang="fr">Contenu de fans non officiel</span></summary><div class="in">
       <blockquote>Códice Errante is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.</blockquote>
       <p lang="es">Dungeons &amp; Dragons y D&amp;D son marcas de Wizards of the Coast LLC. World of Warcraft, Warcraft y los nombres de personajes y lugares de Azeroth son marcas o propiedad de Blizzard Entertainment, Inc. Esta web no está afiliada, patrocinada ni aprobada por ninguna de las dos compañías. Las reglas del SRD 5.2 se usan bajo licencia CC BY 4.0.</p>
-      <p lang="en">Dungeons &amp; Dragons and D&amp;D are trademarks of Wizards of the Coast LLC. World of Warcraft, Warcraft and the names of characters and places of Azeroth are trademarks or property of Blizzard Entertainment, Inc. This site is not affiliated with, sponsored or endorsed by either company. Rules from the SRD 5.2 are used under the CC BY 4.0 licence.</p>
+      <p lang="en">Dungeons &amp; Dragons and D&amp;D are trademarks of Wizards of the Coast LLC. World of Warcraft, Warcraft and the names of characters and places of Azeroth are trademarks or property of Blizzard Entertainment, Inc. This site is not affiliated with, sponsored or endorsed by either company. Rules from the SRD 5.2 are used under the CC BY 4.0 licence.</p><p lang="de">Dungeons &amp; Dragons und D&amp;D sind Marken von Wizards of the Coast LLC. World of Warcraft, Warcraft sowie die Namen von Figuren und Orten Azeroths sind Marken oder Eigentum von Blizzard Entertainment, Inc. Diese Website ist mit keinem der beiden Unternehmen verbunden und wird von ihnen weder gesponsert noch gebilligt. Regeln aus dem SRD 5.2 werden unter der Lizenz CC BY 4.0 verwendet.</p><p lang="fr">Dungeons &amp; Dragons et D&amp;D sont des marques de Wizards of the Coast LLC. World of Warcraft, Warcraft et les noms des personnages et lieux d’Azeroth sont des marques ou la propriété de Blizzard Entertainment, Inc. Ce site n’est ni affilié à l’une ou l’autre société, ni sponsorisé ou approuvé par elles. Les règles du SRD 5.2 sont utilisées sous licence CC BY 4.0.</p>
     </div></details>
-    <details><summary><span lang="es">Titular de la web</span><span lang="en">Site owner</span></summary><div class="in">
-      <p lang="es">En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI), el titular de este sitio es Jorge Gómez Vaello, con domicilio a efectos de notificaciones en Madrid (España) y correo de contacto <b>elcodiceerrante@gmail.com</b>. El sitio no tiene ánimo de lucro ni publicidad.</p>
-      <p lang="en">In accordance with Spanish Law 34/2002 on Information Society Services (LSSI), this site is owned by Jorge Gómez Vaello, Madrid (Spain), contact email <b>elcodiceerrante@gmail.com</b>. The site is non-profit and carries no advertising.</p>
+    <details><summary><span lang="es">Titular de la web</span><span lang="en">Site owner</span><span lang="de">Betreiber der Website</span><span lang="fr">Éditeur du site</span></summary><div class="in">
+      <p lang="es">En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI), el titular de este sitio es Jorge Gómez Vaello, con domicilio a efectos de notificaciones en Madrid (España) y correo de contacto <b>elcodiceerrante@gmail.com</b>. El sitio no tiene ánimo de lucro y actualmente no muestra publicidad.</p>
+      <p lang="en">In accordance with Spanish Law 34/2002 on Information Society Services (LSSI), this site is owned by Jorge Gómez Vaello, Madrid (Spain), contact email <b>elcodiceerrante@gmail.com</b>. The site is non-profit and currently carries no advertising.</p><p lang="de">Gemäß dem spanischen Gesetz 34/2002 über Dienste der Informationsgesellschaft (LSSI) ist Betreiber dieser Website Jorge Gómez Vaello, Madrid (Spanien), Kontakt-E-Mail <b>elcodiceerrante@gmail.com</b>. Die Website ist nicht gewinnorientiert und zeigt derzeit keine Werbung.</p><p lang="fr">Conformément à la loi espagnole 34/2002 sur les services de la société de l’information (LSSI), ce site est édité par Jorge Gómez Vaello, Madrid (Espagne), e-mail de contact <b>elcodiceerrante@gmail.com</b>. Le site est sans but lucratif et n’affiche actuellement aucune publicité.</p>
     </div></details>
-    <details><summary><span lang="es">Normas de la comunidad</span><span lang="en">Community rules</span></summary><div class="in">
+    <details><summary><span lang="es">Publicidad y patrocinios</span><span lang="en">Advertising and sponsorship</span><span lang="de">Werbung und Sponsoring</span><span lang="fr">Publicité et parrainage</span></summary><div class="in">
+      <p lang="es">Hoy la web no muestra publicidad. Si en el futuro se financia con anuncios o patrocinios, se aplicarán estas reglas: las aventuras seguirán siendo gratuitas y descargables sin registro; los anuncios solo aparecerán en la web, nunca dentro de los PDF, y estarán identificados como publicidad; no se usarán logotipos de Blizzard ni de Wizards junto a ellos, ni se dará a entender que los anunciantes cuentan con su respaldo; y antes de activarlos se actualizarán este aviso legal (con los datos que exige la LSSI) y la política de cookies, y se pedirá el consentimiento que exige la normativa.</p>
+      <p lang="en">The site does not currently show advertising. If it is ever funded by ads or sponsorship, these rules will apply: the adventures will remain free to download with no sign-up; ads will appear only on the site, never inside the PDFs, and will be labelled as advertising; no Blizzard or Wizards logos will be used next to them, nor will it be implied that advertisers are endorsed by either company; and before ads are enabled, this legal notice (with the details required by the LSSI) and the cookie policy will be updated and the consent required by law will be requested.</p><p lang="de">Die Website zeigt derzeit keine Werbung. Sollte sie sich künftig durch Anzeigen oder Sponsoring finanzieren, gelten diese Regeln: Die Abenteuer bleiben kostenlos und ohne Registrierung herunterladbar; Anzeigen erscheinen nur auf der Website, nie in den PDFs, und sind als Werbung gekennzeichnet; neben ihnen werden keine Logos von Blizzard oder Wizards verwendet, und es wird nicht der Eindruck erweckt, die Werbenden würden von diesen Unternehmen unterstützt; und bevor Anzeigen aktiviert werden, werden dieses Impressum (mit den vom LSSI verlangten Angaben) und die Cookie-Richtlinie aktualisiert und die gesetzlich vorgeschriebene Einwilligung eingeholt.</p><p lang="fr">Le site n’affiche actuellement aucune publicité. S’il venait à être financé par des annonces ou un parrainage, ces règles s’appliqueraient : les aventures resteront téléchargeables gratuitement et sans inscription ; les annonces n’apparaîtront que sur le site, jamais dans les PDF, et seront signalées comme publicité ; aucun logo de Blizzard ou de Wizards ne sera utilisé à côté d’elles, et il ne sera pas laissé entendre que les annonceurs sont soutenus par ces sociétés ; et avant d’activer les annonces, ces mentions légales (avec les informations exigées par la LSSI) et la politique de cookies seront mises à jour, et le consentement exigé par la loi sera demandé.</p>
+    </div></details>
+    <details><summary><span lang="es">Normas de la comunidad</span><span lang="en">Community rules</span><span lang="de">Gemeinschaftsregeln</span><span lang="fr">Règles de la communauté</span></summary><div class="in">
       <ul lang="es">
         <li>Solo aventuras originales, en español o en inglés, para D&amp;D 2024 o compatibles.</li>
         <li>Sin contenido sexual explícito, discursos de odio ni ataques a personas reales.</li>
         <li>Sin enlaces a copias no autorizadas de libros o material oficial.</li>
+        <li>Sin logotipos, emblemas ni arte oficial de Blizzard o Wizards (por ejemplo, los escudos de la Horda o de la Alianza).</li>
+        <li>Si se usa el SRD 5.2, con su frase de atribución.</li>
         <li>El archivo puede rechazar o retirar cualquier envío que incumpla estas normas.</li>
       </ul>
       <ul lang="en">
         <li>Original adventures only, in Spanish or English, for D&amp;D 2024 or compatible rules.</li>
         <li>No explicit sexual content, hate speech or attacks on real people.</li>
         <li>No links to unauthorised copies of official books or material.</li>
+        <li>No Blizzard or Wizards logos, emblems or official artwork (for example, the Horde or Alliance crests).</li>
+        <li>If the SRD 5.2 is used, its attribution statement must be included.</li>
         <li>The archive may reject or remove any submission that breaks these rules.</li>
+      </ul><ul lang="de">
+        <li>Nur eigene Abenteuer, auf Spanisch oder Englisch, für D&amp;D 2024 oder kompatible Regeln.</li>
+        <li>Keine expliziten sexuellen Inhalte, keine Hassrede und keine Angriffe auf reale Personen.</li>
+        <li>Keine Links zu unerlaubten Kopien offizieller Bücher oder Materialien.</li>
+        <li>Keine Logos, Wappen oder offiziellen Illustrationen von Blizzard oder Wizards (zum Beispiel die Wappen der Horde oder der Allianz).</li>
+        <li>Wird das SRD 5.2 verwendet, muss dessen Namensnennung enthalten sein.</li>
+        <li>Das Archiv kann jede Einreichung ablehnen oder entfernen, die gegen diese Regeln verstößt.</li>
+      </ul><ul lang="fr">
+        <li>Uniquement des aventures originales, en espagnol ou en anglais, pour D&amp;D 2024 ou des règles compatibles.</li>
+        <li>Pas de contenu sexuel explicite, de discours haineux ni d’attaques contre des personnes réelles.</li>
+        <li>Pas de liens vers des copies non autorisées de livres ou de contenu officiel.</li>
+        <li>Pas de logos, emblèmes ni illustrations officielles de Blizzard ou de Wizards (par exemple, les blasons de la Horde ou de l’Alliance).</li>
+        <li>Si le SRD 5.2 est utilisé, sa mention d’attribution doit être incluse.</li>
+        <li>L’archive peut refuser ou retirer tout envoi qui enfreint ces règles.</li>
       </ul>
     </div></details>
-    <details id="retirada"><summary><span lang="es">Solicitar la retirada de un contenido</span><span lang="en">Requesting removal of content</span></summary><div class="in">
+    <details id="retirada"><summary><span lang="es">Solicitar la retirada de un contenido</span><span lang="en">Requesting removal of content</span><span lang="de">Entfernung von Inhalten beantragen</span><span lang="fr">Demander le retrait d’un contenu</span></summary><div class="in">
       <p lang="es">Si eres autor de una aventura publicada y quieres retirarla, o si crees que un contenido infringe tus derechos, escribe a <b>elcodiceerrante@gmail.com</b> indicando el título de la aventura, el motivo y, si alegas una infracción, qué obra tuya se reproduce. Retiraremos el contenido de forma cautelar mientras se revisa la solicitud.</p>
-      <p lang="en">If you are the author of a published adventure and want it removed, or if you believe some content infringes your rights, write to <b>elcodiceerrante@gmail.com</b> stating the title of the adventure, the reason and, if you claim infringement, which work of yours is reproduced. We will take the content down as a precaution while the request is reviewed.</p>
+      <p lang="en">If you are the author of a published adventure and want it removed, or if you believe some content infringes your rights, write to <b>elcodiceerrante@gmail.com</b> stating the title of the adventure, the reason and, if you claim infringement, which work of yours is reproduced. We will take the content down as a precaution while the request is reviewed.</p><p lang="de">Wenn du Autor eines veröffentlichten Abenteuers bist und es entfernen lassen möchtest oder glaubst, dass ein Inhalt deine Rechte verletzt, schreibe an <b>elcodiceerrante@gmail.com</b> und nenne den Titel des Abenteuers, den Grund und, bei einer behaupteten Verletzung, welches deiner Werke wiedergegeben wird. Wir nehmen den Inhalt vorsorglich offline, während der Antrag geprüft wird.</p><p lang="fr">Si vous êtes l’auteur d’une aventure publiée et souhaitez la retirer, ou si vous estimez qu’un contenu porte atteinte à vos droits, écrivez à <b>elcodiceerrante@gmail.com</b> en indiquant le titre de l’aventure, le motif et, en cas d’atteinte alléguée, quelle œuvre de vous est reproduite. Nous retirerons le contenu à titre conservatoire pendant l’examen de la demande.</p>
     </div></details>
-    <details id="privacidad"><summary><span lang="es">Política de privacidad</span><span lang="en">Privacy policy</span></summary><div class="in">
+    <details id="privacidad"><summary><span lang="es">Política de privacidad</span><span lang="en">Privacy policy</span><span lang="de">Datenschutzerklärung</span><span lang="fr">Politique de confidentialité</span></summary><div class="in">
       <p lang="es">Responsable: Jorge Gómez Vaello. Solo tratamos el correo y el nombre que facilitas al enviar una aventura, con la finalidad de gestionar la revisión y comunicarte el resultado. La base jurídica es tu consentimiento. El nombre o seudónimo aparecerá en los créditos de la aventura; el correo nunca se publica ni se cede a terceros, salvo al proveedor que aloja los formularios de la web (Netlify, Inc.), que actúa como encargado del tratamiento. Conservamos el correo mientras la aventura siga publicada. Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a <b>elcodiceerrante@gmail.com</b>, y reclamar ante la Agencia Española de Protección de Datos.</p>
-      <p lang="en">Data controller: Jorge Gómez Vaello. We only process the email address and name you provide when submitting an adventure, in order to handle the review and tell you the outcome. The legal basis is your consent. Your name or pen name will appear in the adventure's credits; your email is never published or shared with third parties, except the provider that hosts the site's forms (Netlify, Inc.), acting as data processor. We keep your email for as long as the adventure remains published. You may exercise your rights of access, rectification, erasure, objection, restriction and portability by writing to <b>elcodiceerrante@gmail.com</b>, and you may lodge a complaint with the Spanish Data Protection Agency (AEPD).</p>
+      <p lang="es"><b>Cookies.</b> La web no usa cookies de análisis, de seguimiento ni de publicidad. Solo guarda en tu navegador el idioma que eliges, para recordarlo en tu próxima visita; es un dato técnico que no sale de tu dispositivo.</p>
+      <p lang="en">Data controller: Jorge Gómez Vaello. We only process the email address and name you provide when submitting an adventure, in order to handle the review and tell you the outcome. The legal basis is your consent. Your name or pen name will appear in the adventure's credits; your email is never published or shared with third parties, except the provider that hosts the site's forms (Netlify, Inc.), acting as data processor. We keep your email for as long as the adventure remains published. You may exercise your rights of access, rectification, erasure, objection, restriction and portability by writing to <b>elcodiceerrante@gmail.com</b>, and you may lodge a complaint with the Spanish Data Protection Agency (AEPD).</p><p lang="de">Verantwortlicher: Jorge Gómez Vaello. Wir verarbeiten nur die E-Mail-Adresse und den Namen, die du beim Einreichen eines Abenteuers angibst, um die Prüfung durchzuführen und dir das Ergebnis mitzuteilen. Rechtsgrundlage ist deine Einwilligung. Dein Name oder Pseudonym erscheint in den Credits des Abenteuers; deine E-Mail wird nie veröffentlicht oder an Dritte weitergegeben, außer an den Anbieter, der die Formulare der Website hostet (Netlify, Inc.) und als Auftragsverarbeiter handelt. Wir speichern deine E-Mail, solange das Abenteuer veröffentlicht bleibt. Du kannst deine Rechte auf Auskunft, Berichtigung, Löschung, Widerspruch, Einschränkung und Übertragbarkeit ausüben, indem du an <b>elcodiceerrante@gmail.com</b> schreibst, und dich bei der spanischen Datenschutzbehörde (AEPD) beschweren.</p><p lang="fr">Responsable du traitement : Jorge Gómez Vaello. Nous ne traitons que l’adresse e-mail et le nom que vous fournissez en proposant une aventure, afin d’assurer la relecture et de vous en communiquer le résultat. La base juridique est votre consentement. Votre nom ou pseudonyme apparaîtra dans les crédits de l’aventure ; votre e-mail n’est jamais publié ni cédé à des tiers, sauf au prestataire qui héberge les formulaires du site (Netlify, Inc.), agissant en tant que sous-traitant. Nous conservons votre e-mail tant que l’aventure reste publiée. Vous pouvez exercer vos droits d’accès, de rectification, d’effacement, d’opposition, de limitation et de portabilité en écrivant à <b>elcodiceerrante@gmail.com</b>, et introduire une réclamation auprès de l’autorité espagnole de protection des données (AEPD).</p>
+      <p lang="en"><b>Cookies.</b> The site uses no analytics, tracking or advertising cookies. It only stores the language you choose in your browser, to remember it on your next visit; this technical data never leaves your device.</p><p lang="de"><b>Cookies.</b> Die Website verwendet keine Analyse-, Tracking- oder Werbe-Cookies. Sie speichert in deinem Browser nur die gewählte Sprache, um sie bei deinem nächsten Besuch zu behalten; diese technische Angabe verlässt dein Gerät nie.</p><p lang="fr"><b>Cookies.</b> Le site n’utilise aucun cookie d’analyse, de suivi ou de publicité. Il enregistre seulement dans votre navigateur la langue choisie, pour la retenir lors de votre prochaine visite ; cette donnée technique ne quitte jamais votre appareil.</p>
     </div></details>
   </div>
 </section>
 
 <footer>
-  <span>Códice Errante · The Wandering Codex</span>
-  <span><span lang="es">Contenido de fans no oficial · Sin ánimo de lucro</span><span lang="en">Unofficial fan content · Non-profit</span></span>
+  <span>Códice Errante · The Wandering Codex<span data-yt hidden> · <a class="ytlink" target="_blank" rel="noopener"><span lang="es">Canal de YouTube</span><span lang="en">YouTube channel</span><span lang="de">YouTube-Kanal</span><span lang="fr">Chaîne YouTube</span></a></span></span>
+  <span><span lang="es">Contenido de fans no oficial · Sin ánimo de lucro · Reglas del SRD 5.2 bajo CC BY 4.0</span><span lang="en">Unofficial fan content · Non-profit · SRD 5.2 rules under CC BY 4.0</span><span lang="de">Inoffizieller Fan-Content · Nicht gewinnorientiert · Regeln aus dem SRD 5.2 unter CC BY 4.0</span><span lang="fr">Contenu de fans non officiel · Sans but lucratif · Règles du SRD 5.2 sous CC BY 4.0</span></span>
 </footer>
 </div>
 
@@ -440,13 +532,14 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
       by:"por", view:"Ver ficha de", count:n => `${n} ${n === 1 ? "aventura" : "aventuras"}`,
       stats:["Nivel","PJ","Sesiones","Tono"],
       facts:["Nivel","Jugadores","Sesiones","Tono","Región","Idioma","Páginas"],
-      onlyOther:"Resumen disponible solo en inglés.",
-      lic:{"CC BY-NC-SA 4.0":"Puedes compartirla y adaptarla gratis, citando al autor, sin fines comerciales y publicando tus versiones con la misma licencia.","CC BY-NC 4.0":"Puedes compartirla y adaptarla gratis, citando al autor y sin fines comerciales.","CC0 1.0":"Dedicada al dominio público. Puedes usarla libremente, sin obligación de citar."},
+      onlyIn:n => `Resumen disponible solo en ${n.toLowerCase()}.`,
+      lic:{"CC BY-NC-SA 4.0":"Puedes compartirla y adaptarla gratis, citando al autor, sin fines comerciales y publicando tus versiones con la misma licencia.","CC BY-NC 4.0":"Puedes compartirla y adaptarla gratis, citando al autor y sin fines comerciales.","CC0 1.0":"El texto original está dedicado al dominio público: puedes usarlo libremente, sin obligación de citar."},
+      third:"Incluye material del SRD 5.2 de Wizards of the Coast (CC BY 4.0), que sí debe citarse, y elementos de Warcraft propiedad de Blizzard Entertainment. Contenido de fans no oficial y sin ánimo de lucro.",
       licLink:"Texto de la licencia", dl:"Descargar PDF", free:"Gratis", soon:"PDF disponible próximamente",
       emptyNone:'El archivo acaba de abrir y todavía no hay aventuras publicadas. <a href="#enviar">Envía la primera</a>.',
       emptyFilter:'Ninguna aventura coincide con la búsqueda. Prueba con menos filtros o <a href="#enviar">envía la tuya</a>.',
       out:"Ya",
-      errHead:"Revisa el formulario: ", errDecl:"acepta las cinco declaraciones", errLvl:"el nivel final no puede ser menor que el inicial",
+      errHead:"Revisa el formulario: ", errDecl:"acepta las seis declaraciones", errLvl:"el nivel final no puede ser menor que el inicial",
       errFile:"adjunta un único PDF de menos de 8 MB", errReq:"rellena los campos marcados con asterisco",
       preview:"El formulario es correcto. Esto es una vista previa: el envío real funcionará cuando la web esté publicada en Netlify."
     },
@@ -457,36 +550,78 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
       by:"by", view:"View details for", count:n => `${n} ${n === 1 ? "adventure" : "adventures"}`,
       stats:["Level","PCs","Sessions","Tone"],
       facts:["Level","Players","Sessions","Tone","Region","Language","Pages"],
-      onlyOther:"Summary available in Spanish only.",
-      lic:{"CC BY-NC-SA 4.0":"You may share and adapt it for free, crediting the author, for non-commercial purposes, releasing your versions under the same licence.","CC BY-NC 4.0":"You may share and adapt it for free, crediting the author, for non-commercial purposes.","CC0 1.0":"Dedicated to the public domain. You may use it freely, with no obligation to credit."},
+      onlyIn:n => `Summary available in ${n} only.`,
+      lic:{"CC BY-NC-SA 4.0":"You may share and adapt it for free, crediting the author, for non-commercial purposes, releasing your versions under the same licence.","CC BY-NC 4.0":"You may share and adapt it for free, crediting the author, for non-commercial purposes.","CC0 1.0":"The original text is dedicated to the public domain: you may use it freely, with no need to give credit."},
+      third:"It includes material from Wizards of the Coast's SRD 5.2 (CC BY 4.0), which must be credited, and Warcraft elements owned by Blizzard Entertainment. Unofficial, non-commercial fan content.",
       licLink:"Licence text", dl:"Download PDF", free:"Free", soon:"PDF coming soon",
       emptyNone:'The archive has just opened and no adventures have been published yet. <a href="#enviar">Submit the first one</a>.',
       emptyFilter:'No adventure matches your search. Try fewer filters or <a href="#enviar">submit yours</a>.',
       out:"Out",
-      errHead:"Please check the form: ", errDecl:"accept all five declarations", errLvl:"the final level cannot be lower than the starting level",
+      errHead:"Please check the form: ", errDecl:"accept all six declarations", errLvl:"the final level cannot be lower than the starting level",
       errFile:"attach a single PDF under 8 MB", errReq:"fill in the fields marked with an asterisk",
       preview:"The form is valid. This is a preview: real submissions will work once the site is live on Netlify."
+    },
+    de: {
+      estado:{publicada:"Veröffentlicht", preparacion:"In Arbeit"},
+      tono:{"Épico":"Episch","Trágico":"Tragisch","Oscuro":"Düster","Ligero":"Heiter","Misterio":"Mysterium","Horror":"Horror"},
+      idioma:{es:"Spanisch", en:"Englisch", bi:"Zweisprachig"},
+      by:"von", view:"Details ansehen:", count:n => `${n} ${n === 1 ? "Abenteuer" : "Abenteuer"}`,
+      stats:["Stufe","SC","Sitzungen","Ton"],
+      facts:["Stufe","Spieler","Sitzungen","Ton","Region","Sprache","Seiten"],
+      onlyIn:n => `Zusammenfassung nur auf ${n} verfügbar.`,
+      lic:{"CC BY-NC-SA 4.0":"Du darfst es kostenlos teilen und bearbeiten, mit Nennung des Autors, nicht kommerziell und unter derselben Lizenz für deine Fassungen.","CC BY-NC 4.0":"Du darfst es kostenlos teilen und bearbeiten, mit Nennung des Autors und nicht kommerziell.","CC0 1.0":"Der Originaltext ist gemeinfrei: Du darfst ihn frei nutzen, ohne Pflicht zur Namensnennung."},
+      third:"Enthält Material aus dem SRD 5.2 von Wizards of the Coast (CC BY 4.0), das genannt werden muss, sowie Warcraft-Elemente im Eigentum von Blizzard Entertainment. Inoffizieller, nicht kommerzieller Fan-Content.",
+      licLink:"Lizenztext", dl:"PDF herunterladen", free:"Kostenlos", soon:"PDF bald verfügbar",
+      emptyNone:'Das Archiv wurde gerade eröffnet, und es gibt noch keine veröffentlichten Abenteuer. <a href="#enviar">Reiche das erste ein</a>.',
+      emptyFilter:'Kein Abenteuer passt zu deiner Suche. Versuche es mit weniger Filtern oder <a href="#enviar">reiche deines ein</a>.',
+      out:"Erschienen",
+      errHead:"Bitte prüfe das Formular: ", errDecl:"akzeptiere alle sechs Erklärungen", errLvl:"die Endstufe darf nicht niedriger als die Anfangsstufe sein",
+      errFile:"hänge eine einzelne PDF unter 8 MB an", errReq:"fülle die mit Sternchen markierten Felder aus",
+      preview:"Das Formular ist gültig. Dies ist eine Vorschau: Echte Einreichungen funktionieren, sobald die Website auf Netlify online ist."
+    },
+    fr: {
+      estado:{publicada:"Publiée", preparacion:"En préparation"},
+      tono:{"Épico":"Épique","Trágico":"Tragique","Oscuro":"Sombre","Ligero":"Léger","Misterio":"Mystère","Horror":"Horreur"},
+      idioma:{es:"Espagnol", en:"Anglais", bi:"Bilingue"},
+      by:"par", view:"Voir la fiche de", count:n => `${n} ${n === 1 ? "aventure" : "aventures"}`,
+      stats:["Niveau","PJ","Séances","Ton"],
+      facts:["Niveau","Joueurs","Séances","Ton","Région","Langue","Pages"],
+      onlyIn:n => `Résumé disponible uniquement en ${n.toLowerCase()}.`,
+      lic:{"CC BY-NC-SA 4.0":"Vous pouvez la partager et l’adapter gratuitement, en citant l’auteur, à des fins non commerciales et en publiant vos versions sous la même licence.","CC BY-NC 4.0":"Vous pouvez la partager et l’adapter gratuitement, en citant l’auteur et à des fins non commerciales.","CC0 1.0":"Le texte original est dédié au domaine public : vous pouvez l’utiliser librement, sans obligation de citer."},
+      third:"Elle contient du contenu du SRD 5.2 de Wizards of the Coast (CC BY 4.0), qui doit être cité, et des éléments de Warcraft appartenant à Blizzard Entertainment. Contenu de fans non officiel et non commercial.",
+      licLink:"Texte de la licence", dl:"Télécharger le PDF", free:"Gratuit", soon:"PDF bientôt disponible",
+      emptyNone:'L’archive vient d’ouvrir et aucune aventure n’a encore été publiée. <a href="#enviar">Proposez la première</a>.',
+      emptyFilter:'Aucune aventure ne correspond à votre recherche. Essayez avec moins de filtres ou <a href="#enviar">proposez la vôtre</a>.',
+      out:"Paru",
+      errHead:"Vérifiez le formulaire : ", errDecl:"acceptez les six déclarations", errLvl:"le niveau final ne peut pas être inférieur au niveau de départ",
+      errFile:"joignez un seul PDF de moins de 8 Mo", errReq:"remplissez les champs marqués d’un astérisque",
+      preview:"Le formulaire est valide. Ceci est un aperçu : les envois réels fonctionneront une fois le site en ligne sur Netlify."
     }
+
   };
+  /* Enlace al canal de YouTube: pega aquí la dirección del canal (p. ej. https://www.youtube.com/@tucanal) y el enlace aparecerá en el menú y en el pie. */
+  const YOUTUBE = "";
   const LICURL = {
     "CC BY-NC-SA 4.0": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.",
     "CC BY-NC 4.0": "https://creativecommons.org/licenses/by-nc/4.0/deed.",
     "CC0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/deed."
   };
   const BADGE = {es:"ES", en:"EN", bi:"ES · EN"};
-  let L = root.getAttribute("data-lang") === "en" ? "en" : "es";
+  const LANGS = ["es","en","de","fr"];
+  let L = LANGS.includes(root.getAttribute("data-lang")) ? root.getAttribute("data-lang") : "es";
   const t = () => T[L];
 
   function summary(a){
     const r = a.resumen;
     if(r && typeof r === "object"){
-      if(r[L]) return {text:r[L], other:false};
-      const k = L === "es" ? "en" : "es";
-      return {text:r[k] || "", other:!!r[k]};
+      const order = L === "es" ? ["es","en"] : L === "en" ? ["en","es"] : [L,"en","es"];
+      for(const k of order) if(r[k]) return {text:r[k], other: k === L ? null : k};
+      return {text:"", other:null};
     }
-    const own = a.idioma === "bi" ? L : (a.idioma || "es");
-    return {text:r || "", other: own !== L};
+    const own = a.idioma === "bi" ? (L === "es" ? "es" : "en") : (a.idioma || "es");
+    return {text:r || "", other: own !== L ? own : null};
   }
+  const noteFor = sm => sm.other ? t().onlyIn(t().idioma[sm.other]) : "";
 
   const dlg = $("dlg"); let current = null;
 
@@ -496,7 +631,8 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     L = l;
     root.setAttribute("data-lang", l); root.lang = l;
     document.querySelectorAll("option[data-en]").forEach(o => { o.textContent = o.dataset[l]; });
-    document.querySelectorAll("[data-ph-es]").forEach(el => { el.placeholder = el.dataset[l === "es" ? "phEs" : "phEn"]; });
+    document.querySelectorAll("[data-ph-es]").forEach(el => { el.placeholder = el.dataset["ph" + l[0].toUpperCase() + l[1]]; });
+    document.querySelectorAll(".hero .page").forEach(p => p.classList.toggle("active", p.lang === l));
     document.querySelectorAll(".langs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.setlang === l));
     $("idiomaContacto").value = l;
     const days = Math.ceil((new Date("2026-11-17T00:00:00") - new Date()) / 864e5);
@@ -508,6 +644,7 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     render();
     if(dlg.open && current) openCard(current);
   }
+  if(YOUTUBE){ document.querySelectorAll(".ytlink").forEach(a => a.href = YOUTUBE); document.querySelectorAll("[data-yt]").forEach(el => el.hidden = false); }
   document.querySelectorAll("[data-setlang]").forEach(b => b.addEventListener("click", () => applyLang(b.dataset.setlang, true)));
 
   $("nPub").textContent = DATA.filter(a => a.estado === "publicada").length;
@@ -558,7 +695,7 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
           <h3>${esc(a.titulo)}</h3>
           <span class="by">${esc(t().by)} ${esc(a.autor)}${a.region ? " · " + esc(a.region) : ""}</span>
           <p class="sum">${esc(sm.text)}</p>
-          ${sm.other ? `<span class="note">${esc(t().onlyOther)}</span>` : ""}
+          ${sm.other ? `<span class="note">${esc(noteFor(sm))}</span>` : ""}
         </div>
         <dl class="stats">
           <div><dt>${s[0]}</dt><dd>${a.nivel[0]}→${a.nivel[1]}</dd></div>
@@ -582,13 +719,13 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     $("dTags").innerHTML = tagsFor(a) + (a.etiquetas || []).map(x => `<span class="tag">${esc(x)}</span>`).join("");
     $("dTitle").textContent = a.titulo;
     $("dBy").textContent = t().by + " " + a.autor;
-    $("dSum").innerHTML = esc(sm.text) + (sm.other ? ` <span class="note">${esc(t().onlyOther)}</span>` : "");
+    $("dSum").innerHTML = esc(sm.text) + (sm.other ? ` <span class="note">${esc(noteFor(sm))}</span>` : "");
     $("dFacts").innerHTML = [
       [f[0], `${a.nivel[0]} → ${a.nivel[1]}`], [f[1], a.jugadores], [f[2], a.sesiones],
       [f[3], t().tono[a.tono] || a.tono], [f[4], a.region || "—"], [f[5], t().idioma[a.idioma] || "—"], [f[6], a.paginas || "—"]
     ].map(([k, v]) => `<div><dt class="label">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
     const lu = LICURL[a.licencia] ? LICURL[a.licencia] + L : "#licencias";
-    $("dLic").innerHTML = `<b>${esc(a.licencia)}.</b> ${esc(t().lic[a.licencia] || "")} <a href="${lu}" target="_blank" rel="noopener">${esc(t().licLink)}</a>`;
+    $("dLic").innerHTML = `<b>${esc(a.licencia)}.</b> ${esc(t().lic[a.licencia] || "")} ${a.srd === false ? "" : esc(t().third)} <a href="${lu}" target="_blank" rel="noopener">${esc(t().licLink)}</a>`;
     $("dAct").innerHTML = a.pdf
       ? `<a class="btn primary" href="${esc(a.pdf)}" download>${esc(t().dl)}</a><span class="label">${esc(t().free)} · ${esc(a.licencia)}</span>`
       : `<button class="btn" type="button" disabled>${esc(t().soon)}</button>`;

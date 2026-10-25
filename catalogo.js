@@ -24,6 +24,7 @@
     estado    "publicada" | "preparacion"
     pdf       ruta al archivo, p. ej. "aventuras/mi-aventura.pdf" ("" si aún no existe)
     paginas   número de páginas del PDF
+    srd       false si la aventura NO usa reglas del SRD 5.2 (por defecto se muestra el aviso del SRD y de Warcraft)
     fecha     "AAAA-MM-DD" de publicación
 
   Modelo para copiar (quita las barras // al pegarlo dentro de los corchetes):
