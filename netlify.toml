@@ -1,0 +1,18 @@
+# Configuración de Netlify para Códice Errante.
+# La web es estática: no hay compilación, se publica la carpeta tal cual.
+[build]
+  publish = "."
+  command = ""
+
+# Redirige la dirección provisional de Netlify al dominio propio
+# (activa estas líneas cuando codiceerrante.es esté funcionando).
+# [[redirects]]
+#   from = "https://elcodiceerrante.netlify.app/*"
+#   to = "https://codiceerrante.es/:splat"
+#   status = 301
+#   force = true
+
+[[headers]]
+  for = "/aventuras/*"
+  [headers.values]
+    Content-Disposition = "attachment"

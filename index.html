@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Códice Errante</title>
+<meta name="description" content="Archivo comunitario de aventuras gratuitas de rol para D&D 2024 ambientadas en Azeroth, en español e inglés. A community archive of free D&D 2024 adventures set in Azeroth, in Spanish and English.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700;800&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>
+/* Idioma inicial: ?lang= → preferencia guardada → idioma del navegador */
+(function(){
+  var l = null;
+  try { l = new URLSearchParams(location.search).get("lang"); } catch(e){}
+  if(l !== "es" && l !== "en"){ try { l = localStorage.getItem("ce-lang"); } catch(e){} }
+  if(l !== "es" && l !== "en"){ l = /^es\b/i.test(navigator.language || "es") ? "es" : "en"; }
+  document.documentElement.setAttribute("data-lang", l);
+  document.documentElement.lang = l;
+})();
+</script>
+<style>
+/* Layout: edición bilingüe — portada como códice abierto (castellano en el verso, inglés en el recto), y el resto del archivo en el idioma activo. */
+:root{
+  --bg:#ECEEF2; --surface:#F7F8FA; --page:#FBFBF9; --ink:#1B1F2E; --muted:#585E70; --line:#CDD1DA;
+  --bronze:#8E5E14; --arcane:#2B6A6E; --seal:#7A2433; --field:#FFFFFF; --fold:rgba(27,31,46,.11);
+  --display:"Alegreya SC", "Palatino Linotype", Georgia, serif;
+  --body:"Alegreya", "Palatino Linotype", Georgia, serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12141C; --surface:#1A1D28; --page:#1E2130; --ink:#E7E4DB; --muted:#A3A6B3; --line:#2E3242;
+  --bronze:#D6A44E; --arcane:#73B8B4; --seal:#E08896; --field:#0F1118; --fold:rgba(0,0,0,.5); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#12141C; --surface:#1A1D28; --page:#1E2130; --ink:#E7E4DB; --muted:#A3A6B3; --line:#2E3242;
+  --bronze:#D6A44E; --arcane:#73B8B4; --seal:#E08896; --field:#0F1118; --fold:rgba(0,0,0,.5); color-scheme:dark }
+
+/* Idioma: se oculta el texto del idioma inactivo, salvo en la portada (.both) */
+:root:not([data-lang="en"]) body [lang="en"]:not(.both){display:none !important}
+:root[data-lang="en"] body [lang="es"]:not(.both){display:none !important}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg); color:var(--ink); font:400 1.06rem/1.6 var(--body); margin:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1120px; margin:0 auto}
+a{color:var(--arcane)}
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible{outline:2px solid var(--bronze); outline-offset:2px}
+h1,h2,h3{font-family:var(--display); text-wrap:balance; line-height:1.1; margin:0}
+p{margin:0}
+.label{font:500 .72rem/1.2 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* Navegación */
+nav{display:flex; flex-wrap:wrap; gap:.7rem 1.4rem; align-items:center; justify-content:space-between; padding-block:1.1rem; border-bottom:1px solid var(--line)}
+.brand{color:var(--ink); text-decoration:none; display:flex; gap:.6rem; align-items:center}
+.brand svg{width:28px; height:28px; flex:none}
+.brand b{display:block; font:800 1.25rem/1 var(--display)}
+.brand small{display:block; font:italic 400 .9rem/1.2 var(--body); color:var(--muted)}
+.navr{display:flex; flex-wrap:wrap; align-items:center; gap:.6rem 1.4rem}
+nav ul{list-style:none; display:flex; flex-wrap:wrap; gap:.4rem 1.2rem; margin:0; padding:0}
+nav ul a{color:var(--muted); text-decoration:none}
+nav ul a:hover{color:var(--ink)}
+.langs{display:inline-flex; border:1px solid var(--line); border-radius:99px; padding:3px; background:var(--surface)}
+.langs button{font:500 .78rem/1 var(--mono); letter-spacing:.08em; border:0; background:transparent; color:var(--muted); padding:.45rem .75rem; border-radius:99px; cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--ink); color:var(--bg)}
+
+/* Portada: códice abierto */
+.hero{padding-block:2.6rem 2.2rem; display:grid; gap:1.4rem}
+.spread{position:relative; display:grid; grid-template-columns:1fr 1fr; background:var(--page); border:1px solid var(--line); border-radius:4px}
+.spread::after{content:""; position:absolute; top:0; bottom:0; left:50%; width:44px; transform:translateX(-50%); pointer-events:none;
+  background:linear-gradient(90deg, transparent, var(--fold) 48%, var(--line) 50%, var(--fold) 52%, transparent)}
+.page{padding:2.2rem 2.4rem 2rem; display:flex; flex-direction:column; gap:1rem; min-width:0; transition:color .25s}
+.page .folio{display:flex; justify-content:space-between; gap:1rem}
+.page h1{font-size:clamp(1.9rem,3.8vw,3.1rem); font-weight:800}
+.page h1 em{font-style:normal; color:var(--bronze)}
+.page p{color:var(--muted); font-size:1.08rem; max-width:32em}
+.page .foot{margin-top:auto; padding-top:.6rem}
+.cta{display:flex; flex-wrap:wrap; gap:.7rem}
+.switch{font:italic 400 1rem var(--body); background:none; border:0; padding:0; color:var(--arcane); text-decoration:underline; cursor:pointer; text-align:left}
+/* Página inactiva: en segundo plano, como la traducción en una edición bilingüe */
+:root:not([data-lang="en"]) .page[lang="en"], :root[data-lang="en"] .page[lang="es"]{color:var(--muted)}
+:root:not([data-lang="en"]) .page[lang="en"] h1 em, :root[data-lang="en"] .page[lang="es"] h1 em{color:inherit}
+:root:not([data-lang="en"]) .page[lang="en"] .cta, :root[data-lang="en"] .page[lang="es"] .cta{display:none}
+:root:not([data-lang="en"]) .page[lang="es"] .switch, :root[data-lang="en"] .page[lang="en"] .switch{display:none}
+.btn{display:inline-flex; align-items:center; gap:.4rem; font:500 1rem/1 var(--body); padding:.8rem 1.2rem; border-radius:3px; text-decoration:none; border:1px solid var(--ink); color:var(--ink); background:transparent; cursor:pointer}
+.btn.primary{background:var(--ink); color:var(--bg)}
+.btn[disabled]{opacity:.5; cursor:not-allowed}
+.ledger{display:flex; flex-wrap:wrap; gap:.6rem 2rem; align-items:baseline}
+.ledger div{display:flex; gap:.6rem; align-items:baseline}
+.ledger b{font:500 1.25rem/1 var(--mono); font-variant-numeric:tabular-nums; color:var(--bronze)}
+
+section{padding-block:2.8rem; border-top:1px solid var(--line); scroll-margin-top:1rem}
+.head{display:grid; gap:.5rem; margin-bottom:1.5rem}
+.head h2{font-size:clamp(1.8rem,4vw,2.5rem)}
+.head p{color:var(--muted); max-width:42em}
+
+/* Buscador y filtros */
+.search{display:grid; gap:.9rem; background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:1rem; margin-bottom:1.2rem}
+.search input[type=search]{width:100%; font:400 1.1rem var(--body); padding:.75rem .9rem; border:1px solid var(--line); border-radius:3px; background:var(--field); color:var(--ink)}
+.fgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.7rem}
+.fgrid label{display:grid; gap:.3rem; min-width:0}
+select, .form input, .form textarea{font:400 1rem var(--body); padding:.55rem .6rem; border:1px solid var(--line); border-radius:3px; background:var(--field); color:var(--ink); width:100%; min-width:0}
+.bar{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:.6rem; margin-bottom:1rem}
+.linkbtn{background:none; border:0; color:var(--arcane); font:inherit; cursor:pointer; text-decoration:underline; padding:0}
+
+/* Fichas */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:1.1rem}
+.grid:empty{display:none}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:4px; display:flex; flex-direction:column; min-width:0; text-align:left; color:inherit; font:inherit; padding:0; cursor:pointer}
+.card:hover{border-color:var(--bronze)}
+.card .top{padding:1.1rem 1.1rem .9rem; display:grid; gap:.5rem}
+.card h3{font-size:1.4rem}
+.by{font-size:.92rem; color:var(--muted); font-style:italic}
+.card p.sum{color:var(--muted); font-size:.98rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+.note{font-size:.85rem; color:var(--muted); font-style:italic}
+.tags{display:flex; flex-wrap:wrap; gap:.35rem}
+.status{font:500 .68rem/1 var(--mono); letter-spacing:.08em; text-transform:uppercase; padding:.32rem .45rem; border-radius:2px; border:1px solid currentColor}
+.status.publicada{color:var(--arcane)} .status.preparacion{color:var(--seal)}
+.tag{font:500 .68rem/1 var(--mono); padding:.32rem .45rem; border-radius:2px; background:var(--bg); color:var(--muted)}
+.tag.lang{background:var(--ink); color:var(--bg); letter-spacing:.08em}
+dl.stats{margin:auto 0 0; display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--line)}
+dl.stats div{padding:.65rem .3rem; text-align:center; border-right:1px solid var(--line); min-width:0}
+dl.stats div:last-child{border-right:0}
+dl.stats dt{font:500 .6rem/1 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+dl.stats dd{margin:.35rem 0 0; font:500 .92rem/1.1 var(--mono); font-variant-numeric:tabular-nums; overflow-wrap:anywhere}
+.empty{padding:2.4rem 1.5rem; text-align:center; color:var(--muted); border:1px dashed var(--line); border-radius:4px; font-size:1.08rem}
+
+/* Diálogo de ficha */
+dialog{border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--ink); width:min(720px, calc(100vw - 32px)); max-height:calc(100vh - 48px); padding:0}
+dialog::backdrop{background:rgba(10,12,20,.55)}
+.dlg{padding:1.4rem; display:grid; gap:1rem}
+.dlg header{display:flex; justify-content:space-between; gap:1rem; align-items:start}
+.dlg h3{font-size:clamp(1.6rem,4vw,2.1rem)}
+.x{background:none; border:1px solid var(--line); border-radius:3px; color:var(--ink); font:500 1rem var(--mono); width:2.2rem; height:2.2rem; cursor:pointer; flex:none}
+.facts{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.6rem; margin:0}
+.facts div{border:1px solid var(--line); border-radius:3px; padding:.6rem .7rem; background:var(--bg)}
+.facts dd{margin:.3rem 0 0; font:500 .95rem var(--mono)}
+.licbox{border-left:3px solid var(--bronze); padding:.7rem .9rem; background:var(--bg); font-size:.95rem}
+.actions{display:flex; flex-wrap:wrap; gap:.7rem; align-items:center}
+
+/* Formulario */
+.form{display:grid; gap:1.4rem; max-width:820px}
+fieldset{border:1px solid var(--line); border-radius:4px; padding:1.1rem 1.1rem 1.2rem; margin:0; display:grid; gap:.9rem; background:var(--surface); min-width:0}
+legend{font:700 1.15rem var(--display); padding:0 .4rem}
+.row{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.9rem}
+.field{display:grid; gap:.3rem; min-width:0}
+.hint{font-size:.88rem; color:var(--muted)}
+.req::after{content:" *"; color:var(--seal)}
+.form textarea{min-height:6.5rem; resize:vertical}
+.radio, .check{display:grid; grid-template-columns:auto 1fr; gap:.6rem; align-items:start; padding:.55rem .2rem}
+.radio input, .check input{margin-top:.3rem; width:1.05rem; height:1.05rem; accent-color:var(--bronze)}
+.radio small{display:block; color:var(--muted); font-size:.88rem}
+.notice{padding:.9rem 1rem; border-radius:4px; border:1px solid var(--arcane); background:var(--surface)}
+.notice.err{border-color:var(--seal)}
+.hp{display:none}
+
+/* Textos legales */
+.legal{display:grid; gap:.7rem}
+details{border:1px solid var(--line); border-radius:4px; background:var(--surface)}
+summary{cursor:pointer; padding:.9rem 1.1rem; font:700 1.1rem var(--display)}
+details .in{padding:0 1.1rem 1.1rem; display:grid; gap:.7rem; max-width:62em}
+details ul{margin:0; padding-left:1.2rem; display:grid; gap:.35rem}
+blockquote{margin:0; padding:.8rem 1rem; border-left:3px solid var(--bronze); font:400 .85rem/1.55 var(--mono); background:var(--bg)}
+footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; gap:1rem; justify-content:space-between}
+
+@media (max-width:760px){
+  .spread{grid-template-columns:1fr}
+  .spread::after{display:none}
+  .page{padding:1.5rem 1.2rem}
+  .page + .page{border-top:1px solid var(--line)}
+  :root[data-lang="en"] .page[lang="en"]{order:-1; border-top:0}
+  :root[data-lang="en"] .page[lang="es"]{border-top:1px solid var(--line)}
+  :root:not([data-lang="en"]) .page[lang="en"] p, :root[data-lang="en"] .page[lang="es"] p{display:none}
+  :root:not([data-lang="en"]) .page[lang="en"] h1, :root[data-lang="en"] .page[lang="es"] h1{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav aria-label="Principal / Main">
+  <a class="brand" href="#inicio">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 29 9.5v13L16 30 3 22.5v-13Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 9 23 21H9Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+    <span><b>Códice Errante</b><small>The Wandering Codex</small></span>
+  </a>
+  <div class="navr">
+    <ul>
+      <li><a href="#catalogo"><span lang="es">Catálogo</span><span lang="en">Catalogue</span></a></li>
+      <li><a href="#enviar"><span lang="es">Envía tu aventura</span><span lang="en">Submit yours</span></a></li>
+      <li><a href="#licencias"><span lang="es">Licencias</span><span lang="en">Licences</span></a></li>
+      <li><a href="#legal"><span lang="es">Aviso legal</span><span lang="en">Legal</span></a></li>
+    </ul>
+    <div class="langs" role="group" aria-label="Idioma / Language">
+      <button type="button" data-setlang="es" aria-pressed="true" title="Español">ES</button>
+      <button type="button" data-setlang="en" aria-pressed="false" title="English">EN</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="inicio">
+  <div class="spread">
+    <article class="page both" lang="es">
+      <div class="folio"><span class="label">Castellano</span><span class="label">D&amp;D 2024 · Azeroth</span></div>
+      <h1>Aventuras escritas por la comunidad, <em>libres para todas las mesas</em>.</h1>
+      <p>Busca una aventura por nivel, número de jugadores, tono o idioma, descárgala gratis y llévala a tu mesa. Si has escrito la tuya, envíala: tras una revisión, quedará disponible para cualquiera bajo la licencia libre que elijas.</p>
+      <div class="foot">
+        <div class="cta"><a class="btn primary" href="#catalogo">Buscar aventuras</a><a class="btn" href="#enviar">Enviar la mía</a></div>
+        <button class="switch" type="button" data-setlang="es">Leer la web en castellano</button>
+      </div>
+    </article>
+    <article class="page both" lang="en">
+      <div class="folio"><span class="label">English</span><span class="label">Fan-made · Free</span></div>
+      <h1>Adventures written by the community, <em>free for every table</em>.</h1>
+      <p>Find an adventure by level, party size, tone or language, download it for free and bring it to your table. If you have written one, send it in: once reviewed, anyone can use it under the open licence you choose.</p>
+      <div class="foot">
+        <div class="cta"><a class="btn primary" href="#catalogo">Browse adventures</a><a class="btn" href="#enviar">Submit mine</a></div>
+        <button class="switch" type="button" data-setlang="en">Read the site in English</button>
+      </div>
+    </article>
+  </div>
+  <div class="ledger" aria-live="polite">
+    <div><b id="nPub">0</b><span class="label"><span lang="es">Publicadas</span><span lang="en">Published</span></span></div>
+    <div><b id="nPrep">0</b><span class="label"><span lang="es">En preparación</span><span lang="en">In progress</span></span></div>
+    <div><b id="nDays">—</b><span class="label"><span lang="es">Días para el manual de Warcraft</span><span lang="en">Days to the Warcraft sourcebook</span></span></div>
+  </div>
+</header>
+
+<section id="catalogo">
+  <div class="head">
+    <h2><span lang="es">Catálogo</span><span lang="en">Catalogue</span></h2>
+    <p><span lang="es">Busca por título, autor, región o palabra clave, y afina con los filtros. Todas las aventuras son gratuitas y cada ficha indica en qué idioma está escrita.</span><span lang="en">Search by title, author, region or keyword, then narrow it down with the filters. Every adventure is free, and each entry shows the language it is written in.</span></p>
+  </div>
+
+  <div class="search" role="search">
+    <label class="sr" for="q"><span lang="es">Buscar aventuras</span><span lang="en">Search adventures</span></label>
+    <input type="search" id="q" autocomplete="off"
+      data-ph-es="Busca por título, autor, región o palabra clave: no muertos, asedio, one-shot…"
+      data-ph-en="Search by title, author, region or keyword: undead, siege, one-shot…">
+    <div class="fgrid">
+      <label><span class="label"><span lang="es">Idioma</span><span lang="en">Language</span></span>
+        <select id="fIdioma"><option value="" data-en="Any">Cualquiera</option><option value="es" data-en="Spanish">Español</option><option value="en" data-en="English">Inglés</option></select></label>
+      <label><span class="label"><span lang="es">Nivel</span><span lang="en">Level</span></span>
+        <select id="fNivel"><option value="" data-en="Any">Cualquiera</option><option value="1-4" data-en="1–4 · Starting out">1–4 · Iniciación</option><option value="5-10" data-en="5–10 · Heroic">5–10 · Heroico</option><option value="11-16" data-en="11–16 · Epic">11–16 · Épico</option><option value="17-20" data-en="17–20 · Legendary">17–20 · Legendario</option></select></label>
+      <label><span class="label"><span lang="es">Jugadores</span><span lang="en">Players</span></span>
+        <select id="fPj"><option value="" data-en="Any">Cualquiera</option><option value="1">1–2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6" data-en="6 or more">6 o más</option></select></label>
+      <label><span class="label"><span lang="es">Duración</span><span lang="en">Length</span></span>
+        <select id="fDur"><option value="" data-en="Any">Cualquiera</option><option value="1" data-en="One session">Una sesión</option><option value="2-4" data-en="2–4 sessions">2–4 sesiones</option><option value="5-99" data-en="5 or more">5 o más</option></select></label>
+      <label><span class="label"><span lang="es">Tono</span><span lang="en">Tone</span></span>
+        <select id="fTono"><option value="" data-en="Any">Cualquiera</option><option value="Épico" data-en="Epic">Épico</option><option value="Trágico" data-en="Tragic">Trágico</option><option value="Oscuro" data-en="Dark">Oscuro</option><option value="Ligero" data-en="Light-hearted">Ligero</option><option value="Misterio" data-en="Mystery">Misterio</option><option value="Horror" data-en="Horror">Horror</option></select></label>
+      <label><span class="label"><span lang="es">Licencia</span><span lang="en">Licence</span></span>
+        <select id="fLic"><option value="" data-en="Any">Cualquiera</option><option>CC BY-NC-SA 4.0</option><option>CC BY-NC 4.0</option><option>CC0 1.0</option></select></label>
+      <label><span class="label"><span lang="es">Ordenar</span><span lang="en">Sort</span></span>
+        <select id="fOrden"><option value="reciente" data-en="Newest first">Más recientes</option><option value="titulo" data-en="Title (A–Z)">Título (A–Z)</option><option value="nivel" data-en="Starting level">Nivel inicial</option></select></label>
+    </div>
+  </div>
+
+  <div class="bar"><span class="label" id="count" aria-live="polite"></span><button class="linkbtn" id="reset" type="button"><span lang="es">Quitar filtros</span><span lang="en">Clear filters</span></button></div>
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" hidden></p>
+</section>
+
+<dialog id="dlg" aria-labelledby="dTitle">
+  <div class="dlg">
+    <header>
+      <div style="display:grid; gap:.5rem">
+        <div class="tags" id="dTags"></div>
+        <h3 id="dTitle"></h3>
+        <span class="by" id="dBy"></span>
+      </div>
+      <button class="x" id="dClose" type="button" aria-label="Cerrar / Close">×</button>
+    </header>
+    <p id="dSum"></p>
+    <dl class="facts" id="dFacts"></dl>
+    <div class="licbox" id="dLic"></div>
+    <div class="actions" id="dAct"></div>
+  </div>
+</dialog>
+
+<section id="enviar">
+  <div class="head">
+    <h2><span lang="es">Envía tu aventura</span><span lang="en">Submit your adventure</span></h2>
+    <p><span lang="es">Aceptamos aventuras en español o en inglés. Todos los envíos se revisan antes de publicarse, normalmente en unos días: comprobamos que la aventura sea tuya, que no copie texto ni tablas de libros oficiales y que respete las normas de la comunidad. Los campos con asterisco son obligatorios.</span><span lang="en">We accept adventures in Spanish or English. Every submission is reviewed before it goes live, usually within a few days: we check that the adventure is yours, that it does not copy text or tables from official books, and that it follows the community rules. Fields marked with an asterisk are required.</span></p>
+  </div>
+
+  <form class="form" id="envio" name="envio-aventura" method="POST" action="/gracias.html" data-netlify="true" netlify-honeypot="bot-field" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="form-name" value="envio-aventura">
+    <input type="hidden" name="idioma-contacto" id="idiomaContacto" value="es">
+    <p class="hp"><label>No rellenes este campo / Leave empty: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+
+    <fieldset>
+      <legend><span lang="es">La aventura</span><span lang="en">The adventure</span></legend>
+      <div class="field"><label class="req" for="titulo"><span lang="es">Título</span><span lang="en">Title</span></label><input id="titulo" name="titulo" required maxlength="120"></div>
+      <div class="row">
+        <div class="field"><label class="req" for="idioma"><span lang="es">Idioma de la aventura</span><span lang="en">Language of the adventure</span></label>
+          <select id="idioma" name="idioma" required><option value="" data-en="Choose one">Elige uno</option><option value="es" data-en="Spanish">Español</option><option value="en" data-en="English">Inglés</option><option value="bi" data-en="Both (bilingual)">Ambos (bilingüe)</option></select></div>
+        <div class="field"><label class="req" for="tono"><span lang="es">Tono</span><span lang="en">Tone</span></label>
+          <select id="tono" name="tono" required><option value="" data-en="Choose one">Elige uno</option><option value="Épico" data-en="Epic">Épico</option><option value="Trágico" data-en="Tragic">Trágico</option><option value="Oscuro" data-en="Dark">Oscuro</option><option value="Ligero" data-en="Light-hearted">Ligero</option><option value="Misterio" data-en="Mystery">Misterio</option><option value="Horror" data-en="Horror">Horror</option></select></div>
+      </div>
+      <div class="field"><label class="req" for="resumen"><span lang="es">Resumen para la ficha</span><span lang="en">Summary for the catalogue</span></label><textarea id="resumen" name="resumen" required maxlength="600"></textarea><span class="hint"><span lang="es">En el idioma de la aventura. Hasta 600 caracteres, sin destripar el final.</span><span lang="en">In the language of the adventure. Up to 600 characters, no spoilers.</span></span></div>
+      <div class="field"><label for="resumenTrad"><span lang="es">Resumen en el otro idioma (opcional)</span><span lang="en">Summary in the other language (optional)</span></label><textarea id="resumenTrad" name="resumen-traduccion" maxlength="600"></textarea><span class="hint"><span lang="es">Si lo incluyes, la ficha se mostrará en los dos idiomas. Si no, la traduciremos nosotros.</span><span lang="en">If you include it, the entry will appear in both languages. If not, we will translate it.</span></span></div>
+      <div class="row">
+        <div class="field"><label class="req" for="nivelIni"><span lang="es">Nivel inicial</span><span lang="en">Starting level</span></label><input id="nivelIni" name="nivel-inicial" type="number" min="1" max="20" required></div>
+        <div class="field"><label class="req" for="nivelFin"><span lang="es">Nivel final</span><span lang="en">Final level</span></label><input id="nivelFin" name="nivel-final" type="number" min="1" max="20" required></div>
+        <div class="field"><label class="req" for="jugadores"><span lang="es">Jugadores</span><span lang="en">Players</span></label><input id="jugadores" name="jugadores" placeholder="4–5" required maxlength="10"></div>
+        <div class="field"><label class="req" for="sesiones"><span lang="es">Sesiones aprox.</span><span lang="en">Approx. sessions</span></label><input id="sesiones" name="sesiones" type="number" min="1" max="99" required></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="region"><span lang="es">Región de Azeroth</span><span lang="en">Region of Azeroth</span></label><input id="region" name="region" maxlength="60"></div>
+        <div class="field"><label for="etiquetas"><span lang="es">Palabras clave</span><span lang="en">Keywords</span></label><input id="etiquetas" name="etiquetas" maxlength="160" data-ph-es="asedio, no muertos, viaje" data-ph-en="siege, undead, journey"></div>
+      </div>
+      <div class="field"><label class="req" for="archivo"><span lang="es">Archivo de la aventura (PDF)</span><span lang="en">Adventure file (PDF)</span></label><input id="archivo" name="archivo" type="file" accept="application/pdf,.pdf" required><span class="hint"><span lang="es">Un único PDF de menos de 8 MB. Si pesa más, sube un PDF corto con el enlace a la versión completa en Google Drive, itch.io u otro servicio.</span><span lang="en">A single PDF under 8 MB. If yours is larger, upload a short PDF with a link to the full version on Google Drive, itch.io or similar.</span></span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span lang="es">Sobre ti</span><span lang="en">About you</span></legend>
+      <div class="row">
+        <div class="field"><label class="req" for="autor"><span lang="es">Nombre o seudónimo para los créditos</span><span lang="en">Name or pen name for the credits</span></label><input id="autor" name="autor" required maxlength="80"></div>
+        <div class="field"><label class="req" for="email"><span lang="es">Correo de contacto</span><span lang="en">Contact email</span></label><input id="email" name="email" type="email" required maxlength="120"><span class="hint"><span lang="es">Solo para avisarte de la revisión. Nunca se publica.</span><span lang="en">Only used to tell you about the review. Never published.</span></span></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="req"><span lang="es">Licencia de tu aventura</span><span lang="en">Licence for your adventure</span></legend>
+      <p class="hint"><span lang="es">Sigues siendo el autor. La licencia indica qué pueden hacer los demás con tu texto.</span><span lang="en">You remain the author. The licence tells others what they may do with your text.</span> <a href="#licencias"><span lang="es">Más información</span><span lang="en">Learn more</span></a></p>
+      <label class="radio"><input type="radio" name="licencia" value="CC BY-NC-SA 4.0" required checked><span><b>CC BY-NC-SA 4.0</b> · <span lang="es">Recomendada</span><span lang="en">Recommended</span><small><span lang="es">Cualquiera puede descargar, compartir y adaptar tu aventura, sin fines comerciales, citándote y publicando sus versiones con la misma licencia.</span><span lang="en">Anyone may download, share and adapt your adventure for non-commercial purposes, crediting you and releasing their versions under the same licence.</span></small></span></label>
+      <label class="radio"><input type="radio" name="licencia" value="CC BY-NC 4.0"><span><b>CC BY-NC 4.0</b><small><span lang="es">Como la anterior, pero las adaptaciones pueden usar otra licencia no comercial.</span><span lang="en">As above, but adaptations may use a different non-commercial licence.</span></small></span></label>
+      <label class="radio"><input type="radio" name="licencia" value="CC0 1.0"><span><b>CC0 1.0</b> · <span lang="es">Dominio público</span><span lang="en">Public domain</span><small><span lang="es">Renuncias a todos tus derechos en la medida que permita la ley. Cualquiera puede usarla sin citarte.</span><span lang="en">You waive all your rights to the extent the law allows. Anyone may use it without crediting you.</span></small></span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend><span lang="es">Declaraciones</span><span lang="en">Declarations</span></legend>
+      <label class="check"><input type="checkbox" name="decl-autoria" value="si" required><span class="req"><span lang="es">Soy el autor o autora de esta aventura, o cuento con permiso de todas las personas que han participado en ella.</span><span lang="en">I am the author of this adventure, or I have permission from everyone who contributed to it.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-oficial" value="si" required><span class="req"><span lang="es">La aventura no copia texto, tablas, perfiles de criaturas, mapas ni ilustraciones de libros o juegos oficiales. Cuando necesita esos datos, remite al manual correspondiente.</span><span lang="en">The adventure does not copy text, tables, stat blocks, maps or artwork from official books or games. Where it needs that material, it refers to the relevant book.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-cesion" value="si" required><span class="req"><span lang="es">Concedo a Códice Errante una licencia gratuita, mundial y no exclusiva para alojar, mostrar y distribuir mi aventura, y la publico bajo la licencia que he elegido. Conservo la autoría y puedo pedir su retirada del archivo en cualquier momento.</span><span lang="en">I grant Códice Errante a free, worldwide, non-exclusive licence to host, display and distribute my adventure, and I release it under the licence I have chosen. I keep authorship and may ask for its removal from the archive at any time.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-gratis" value="si" required><span class="req"><span lang="es">Entiendo que la aventura será siempre gratuita, que no recibiré pago por ella y que es contenido de fans no oficial.</span><span lang="en">I understand the adventure will always be free, that I will not be paid for it, and that it is unofficial fan content.</span></span></label>
+      <label class="check"><input type="checkbox" name="decl-privacidad" value="si" required><span class="req"><span lang="es">He leído la <a href="#privacidad">política de privacidad</a> y acepto que se use mi correo para gestionar este envío.</span><span lang="en">I have read the <a href="#privacidad">privacy policy</a> and agree to my email being used to handle this submission.</span></span></label>
+    </fieldset>
+
+    <div class="notice err" id="formErr" role="alert" hidden></div>
+    <div class="notice" id="formOk" role="status" hidden></div>
+    <div><button class="btn primary" type="submit"><span lang="es">Enviar a revisión</span><span lang="en">Send for review</span></button></div>
+  </form>
+</section>
+
+<section id="licencias">
+  <div class="head">
+    <h2><span lang="es">Licencias y cesión de derechos</span><span lang="en">Licences and rights</span></h2>
+    <p><span lang="es">Quien envía una aventura no cede su propiedad. Concede permisos para que el archivo la distribuya y elige una licencia Creative Commons que dice a cada lector qué puede hacer con ella.</span><span lang="en">Submitting an adventure does not transfer its ownership. The author grants the archive permission to distribute it and chooses a Creative Commons licence that tells every reader what they may do with it.</span></p>
+  </div>
+  <div class="legal">
+    <details open><summary><span lang="es">Qué puedes hacer con una aventura descargada</span><span lang="en">What you can do with a downloaded adventure</span></summary><div class="in">
+      <ul lang="es">
+        <li>Jugarla, imprimirla y compartirla con tu grupo, siempre gratis.</li>
+        <li>Con CC BY-NC-SA 4.0 o CC BY-NC 4.0: adaptarla y publicar tu versión sin fines comerciales, citando a su autor. Con la primera, tu versión debe usar la misma licencia.</li>
+        <li>Con CC0 1.0: usarla como quieras, sin obligación de citar.</li>
+        <li>En ningún caso puedes venderla. Aunque la licencia lo permitiera, el contenido ambientado en Azeroth sigue sujeto a los derechos de terceros.</li>
+        <li>Puedes traducirla al otro idioma del archivo y enviarnos la traducción, citando al autor original, siempre que la licencia permita adaptaciones.</li>
+      </ul>
+      <ul lang="en">
+        <li>Play it, print it and share it with your group, always for free.</li>
+        <li>Under CC BY-NC-SA 4.0 or CC BY-NC 4.0: adapt it and publish your version for non-commercial purposes, crediting the author. Under the first, your version must use the same licence.</li>
+        <li>Under CC0 1.0: use it however you like, with no obligation to credit.</li>
+        <li>You may never sell it. Even where the licence would allow it, content set in Azeroth remains subject to third-party rights.</li>
+        <li>You may translate it into the archive's other language and send us the translation, crediting the original author, as long as the licence allows adaptations.</li>
+      </ul>
+    </div></details>
+    <details><summary><span lang="es">Qué permiso concede el autor al archivo</span><span lang="en">What permission the author grants the archive</span></summary><div class="in">
+      <p lang="es">Una licencia gratuita, mundial y no exclusiva para alojar, mostrar y distribuir la aventura en esta web. El autor puede publicarla también en otros sitios y puede pedir su retirada del archivo cuando quiera. La retirada no afecta a las copias que otras personas ya hayan descargado legítimamente bajo la licencia Creative Commons, porque esas licencias no se pueden revocar.</p>
+      <p lang="en">A free, worldwide, non-exclusive licence to host, display and distribute the adventure on this site. The author may also publish it elsewhere and may ask for its removal from the archive at any time. Removal does not affect copies other people have already downloaded lawfully under the Creative Commons licence, because those licences cannot be revoked.</p>
+    </div></details>
+    <details><summary><span lang="es">Por qué no aceptamos material oficial</span><span lang="en">Why we do not accept official material</span></summary><div class="in">
+      <p lang="es">La política de contenido de fans de Wizards of the Coast permite crear contenido gratuito con su propiedad intelectual, pero excluye la copia literal de reglas o libros. Blizzard no ha publicado una política equivalente para obras escritas. Por eso solo publicamos aventuras originales que remiten a los manuales en lugar de reproducirlos. Las reglas del SRD 5.2 sí pueden citarse, porque se distribuyen con licencia CC BY 4.0.</p>
+      <p lang="en">Wizards of the Coast's Fan Content Policy allows free fan content using its intellectual property, but excludes verbatim copying of rules or books. Blizzard has not published an equivalent policy for written works. That is why we only publish original adventures that refer to the books rather than reproducing them. Rules from the SRD 5.2 may be quoted, as they are released under CC BY 4.0.</p>
+    </div></details>
+  </div>
+</section>
+
+<section id="legal">
+  <div class="head">
+    <h2><span lang="es">Aviso legal y normas</span><span lang="en">Legal notice and rules</span></h2>
+    <p lang="en">This English translation is provided for convenience. In case of any discrepancy, the Spanish version prevails.</p>
+  </div>
+  <div class="legal">
+    <details open><summary><span lang="es">Contenido de fans no oficial</span><span lang="en">Unofficial fan content</span></summary><div class="in">
+      <blockquote>Códice Errante is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.</blockquote>
+      <p lang="es">Dungeons &amp; Dragons y D&amp;D son marcas de Wizards of the Coast LLC. World of Warcraft, Warcraft y los nombres de personajes y lugares de Azeroth son marcas o propiedad de Blizzard Entertainment, Inc. Esta web no está afiliada, patrocinada ni aprobada por ninguna de las dos compañías. Las reglas del SRD 5.2 se usan bajo licencia CC BY 4.0.</p>
+      <p lang="en">Dungeons &amp; Dragons and D&amp;D are trademarks of Wizards of the Coast LLC. World of Warcraft, Warcraft and the names of characters and places of Azeroth are trademarks or property of Blizzard Entertainment, Inc. This site is not affiliated with, sponsored or endorsed by either company. Rules from the SRD 5.2 are used under the CC BY 4.0 licence.</p>
+    </div></details>
+    <details><summary><span lang="es">Titular de la web</span><span lang="en">Site owner</span></summary><div class="in">
+      <p lang="es">En cumplimiento de la Ley 34/2002 de Servicios de la Sociedad de la Información (LSSI), el titular de este sitio es Jorge Gómez Vaello, con domicilio a efectos de notificaciones en Madrid (España) y correo de contacto <b>elcodiceerrante@gmail.com</b>. El sitio no tiene ánimo de lucro ni publicidad.</p>
+      <p lang="en">In accordance with Spanish Law 34/2002 on Information Society Services (LSSI), this site is owned by Jorge Gómez Vaello, Madrid (Spain), contact email <b>elcodiceerrante@gmail.com</b>. The site is non-profit and carries no advertising.</p>
+    </div></details>
+    <details><summary><span lang="es">Normas de la comunidad</span><span lang="en">Community rules</span></summary><div class="in">
+      <ul lang="es">
+        <li>Solo aventuras originales, en español o en inglés, para D&amp;D 2024 o compatibles.</li>
+        <li>Sin contenido sexual explícito, discursos de odio ni ataques a personas reales.</li>
+        <li>Sin enlaces a copias no autorizadas de libros o material oficial.</li>
+        <li>El archivo puede rechazar o retirar cualquier envío que incumpla estas normas.</li>
+      </ul>
+      <ul lang="en">
+        <li>Original adventures only, in Spanish or English, for D&amp;D 2024 or compatible rules.</li>
+        <li>No explicit sexual content, hate speech or attacks on real people.</li>
+        <li>No links to unauthorised copies of official books or material.</li>
+        <li>The archive may reject or remove any submission that breaks these rules.</li>
+      </ul>
+    </div></details>
+    <details id="retirada"><summary><span lang="es">Solicitar la retirada de un contenido</span><span lang="en">Requesting removal of content</span></summary><div class="in">
+      <p lang="es">Si eres autor de una aventura publicada y quieres retirarla, o si crees que un contenido infringe tus derechos, escribe a <b>elcodiceerrante@gmail.com</b> indicando el título de la aventura, el motivo y, si alegas una infracción, qué obra tuya se reproduce. Retiraremos el contenido de forma cautelar mientras se revisa la solicitud.</p>
+      <p lang="en">If you are the author of a published adventure and want it removed, or if you believe some content infringes your rights, write to <b>elcodiceerrante@gmail.com</b> stating the title of the adventure, the reason and, if you claim infringement, which work of yours is reproduced. We will take the content down as a precaution while the request is reviewed.</p>
+    </div></details>
+    <details id="privacidad"><summary><span lang="es">Política de privacidad</span><span lang="en">Privacy policy</span></summary><div class="in">
+      <p lang="es">Responsable: Jorge Gómez Vaello. Solo tratamos el correo y el nombre que facilitas al enviar una aventura, con la finalidad de gestionar la revisión y comunicarte el resultado. La base jurídica es tu consentimiento. El nombre o seudónimo aparecerá en los créditos de la aventura; el correo nunca se publica ni se cede a terceros, salvo al proveedor que aloja los formularios de la web (Netlify, Inc.), que actúa como encargado del tratamiento. Conservamos el correo mientras la aventura siga publicada. Puedes ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a <b>elcodiceerrante@gmail.com</b>, y reclamar ante la Agencia Española de Protección de Datos.</p>
+      <p lang="en">Data controller: Jorge Gómez Vaello. We only process the email address and name you provide when submitting an adventure, in order to handle the review and tell you the outcome. The legal basis is your consent. Your name or pen name will appear in the adventure's credits; your email is never published or shared with third parties, except the provider that hosts the site's forms (Netlify, Inc.), acting as data processor. We keep your email for as long as the adventure remains published. You may exercise your rights of access, rectification, erasure, objection, restriction and portability by writing to <b>elcodiceerrante@gmail.com</b>, and you may lodge a complaint with the Spanish Data Protection Agency (AEPD).</p>
+    </div></details>
+  </div>
+</section>
+
+<footer>
+  <span>Códice Errante · The Wandering Codex</span>
+  <span><span lang="es">Contenido de fans no oficial · Sin ánimo de lucro</span><span lang="en">Unofficial fan content · Non-profit</span></span>
+</footer>
+</div>
+
+<script src="catalogo.js"></script>
+<script>
+(function(){
+  const DATA = Array.isArray(window.CATALOGO) ? window.CATALOGO : [];
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+  const parseRange = s => { const m = String(s).match(/(\d+)\D*(\d+)?/); return m ? [ +m[1], +(m[2] || m[1]) ] : [0, 99]; };
+
+  const T = {
+    es: {
+      estado:{publicada:"Publicada", preparacion:"En preparación"},
+      tono:{"Épico":"Épico","Trágico":"Trágico","Oscuro":"Oscuro","Ligero":"Ligero","Misterio":"Misterio","Horror":"Horror"},
+      idioma:{es:"Español", en:"Inglés", bi:"Bilingüe"},
+      by:"por", view:"Ver ficha de", count:n => `${n} ${n === 1 ? "aventura" : "aventuras"}`,
+      stats:["Nivel","PJ","Sesiones","Tono"],
+      facts:["Nivel","Jugadores","Sesiones","Tono","Región","Idioma","Páginas"],
+      onlyOther:"Resumen disponible solo en inglés.",
+      lic:{"CC BY-NC-SA 4.0":"Puedes compartirla y adaptarla gratis, citando al autor, sin fines comerciales y publicando tus versiones con la misma licencia.","CC BY-NC 4.0":"Puedes compartirla y adaptarla gratis, citando al autor y sin fines comerciales.","CC0 1.0":"Dedicada al dominio público. Puedes usarla libremente, sin obligación de citar."},
+      licLink:"Texto de la licencia", dl:"Descargar PDF", free:"Gratis", soon:"PDF disponible próximamente",
+      emptyNone:'El archivo acaba de abrir y todavía no hay aventuras publicadas. <a href="#enviar">Envía la primera</a>.',
+      emptyFilter:'Ninguna aventura coincide con la búsqueda. Prueba con menos filtros o <a href="#enviar">envía la tuya</a>.',
+      out:"Ya",
+      errHead:"Revisa el formulario: ", errDecl:"acepta las cinco declaraciones", errLvl:"el nivel final no puede ser menor que el inicial",
+      errFile:"adjunta un único PDF de menos de 8 MB", errReq:"rellena los campos marcados con asterisco",
+      preview:"El formulario es correcto. Esto es una vista previa: el envío real funcionará cuando la web esté publicada en Netlify."
+    },
+    en: {
+      estado:{publicada:"Published", preparacion:"In progress"},
+      tono:{"Épico":"Epic","Trágico":"Tragic","Oscuro":"Dark","Ligero":"Light-hearted","Misterio":"Mystery","Horror":"Horror"},
+      idioma:{es:"Spanish", en:"English", bi:"Bilingual"},
+      by:"by", view:"View details for", count:n => `${n} ${n === 1 ? "adventure" : "adventures"}`,
+      stats:["Level","PCs","Sessions","Tone"],
+      facts:["Level","Players","Sessions","Tone","Region","Language","Pages"],
+      onlyOther:"Summary available in Spanish only.",
+      lic:{"CC BY-NC-SA 4.0":"You may share and adapt it for free, crediting the author, for non-commercial purposes, releasing your versions under the same licence.","CC BY-NC 4.0":"You may share and adapt it for free, crediting the author, for non-commercial purposes.","CC0 1.0":"Dedicated to the public domain. You may use it freely, with no obligation to credit."},
+      licLink:"Licence text", dl:"Download PDF", free:"Free", soon:"PDF coming soon",
+      emptyNone:'The archive has just opened and no adventures have been published yet. <a href="#enviar">Submit the first one</a>.',
+      emptyFilter:'No adventure matches your search. Try fewer filters or <a href="#enviar">submit yours</a>.',
+      out:"Out",
+      errHead:"Please check the form: ", errDecl:"accept all five declarations", errLvl:"the final level cannot be lower than the starting level",
+      errFile:"attach a single PDF under 8 MB", errReq:"fill in the fields marked with an asterisk",
+      preview:"The form is valid. This is a preview: real submissions will work once the site is live on Netlify."
+    }
+  };
+  const LICURL = {
+    "CC BY-NC-SA 4.0": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.",
+    "CC BY-NC 4.0": "https://creativecommons.org/licenses/by-nc/4.0/deed.",
+    "CC0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/deed."
+  };
+  const BADGE = {es:"ES", en:"EN", bi:"ES · EN"};
+  let L = root.getAttribute("data-lang") === "en" ? "en" : "es";
+  const t = () => T[L];
+
+  function summary(a){
+    const r = a.resumen;
+    if(r && typeof r === "object"){
+      if(r[L]) return {text:r[L], other:false};
+      const k = L === "es" ? "en" : "es";
+      return {text:r[k] || "", other:!!r[k]};
+    }
+    const own = a.idioma === "bi" ? L : (a.idioma || "es");
+    return {text:r || "", other: own !== L};
+  }
+
+  const dlg = $("dlg"); let current = null;
+
+  // Textos que no admiten <span lang>: opciones y marcadores de posición
+  document.querySelectorAll("option[data-en]").forEach(o => { o.dataset.es = o.textContent; });
+  function applyLang(l, persist){
+    L = l;
+    root.setAttribute("data-lang", l); root.lang = l;
+    document.querySelectorAll("option[data-en]").forEach(o => { o.textContent = o.dataset[l]; });
+    document.querySelectorAll("[data-ph-es]").forEach(el => { el.placeholder = el.dataset[l === "es" ? "phEs" : "phEn"]; });
+    document.querySelectorAll(".langs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.setlang === l));
+    $("idiomaContacto").value = l;
+    const days = Math.ceil((new Date("2026-11-17T00:00:00") - new Date()) / 864e5);
+    $("nDays").textContent = days > 0 ? days : t().out;
+    if(persist){
+      try { localStorage.setItem("ce-lang", l); } catch(e){}
+      try { const u = new URL(location.href); u.searchParams.set("lang", l); history.replaceState(null, "", u); } catch(e){}
+    }
+    render();
+    if(dlg.open && current) openCard(current);
+  }
+  document.querySelectorAll("[data-setlang]").forEach(b => b.addEventListener("click", () => applyLang(b.dataset.setlang, true)));
+
+  $("nPub").textContent = DATA.filter(a => a.estado === "publicada").length;
+  $("nPrep").textContent = DATA.filter(a => a.estado === "preparacion").length;
+
+  // Catálogo
+  const ctrls = ["q","fIdioma","fNivel","fPj","fDur","fTono","fLic","fOrden"].map($);
+  function matches(a){
+    const q = norm($("q").value.trim());
+    if(q){
+      const r = a.resumen && typeof a.resumen === "object" ? Object.values(a.resumen).join(" ") : a.resumen;
+      const hay = norm([a.titulo, a.autor, r, a.region, a.tono, T.en.tono[a.tono], ...(a.etiquetas || [])].join(" "));
+      if(!q.split(/\s+/).every(w => hay.includes(w))) return false;
+    }
+    const li = $("fIdioma").value;
+    if(li && a.idioma !== li && a.idioma !== "bi") return false;
+    const n = $("fNivel").value;
+    if(n){ const [lo, hi] = n.split("-").map(Number); if(a.nivel[1] < lo || a.nivel[0] > hi) return false; }
+    const p = $("fPj").value;
+    if(p){ const [lo, hi] = parseRange(a.jugadores); const v = +p;
+      if(v === 1){ if(lo > 2) return false; } else if(v === 6){ if(hi < 6) return false; } else if(v < lo || v > hi) return false; }
+    const d = $("fDur").value;
+    if(d){ const [lo, hi] = d.split("-").map(Number); if(a.sesiones < lo || a.sesiones > (hi || lo)) return false; }
+    if($("fTono").value && a.tono !== $("fTono").value) return false;
+    if($("fLic").value && a.licencia !== $("fLic").value) return false;
+    return true;
+  }
+  function sorted(list){
+    const o = $("fOrden").value;
+    return list.sort((x, y) =>
+      o === "titulo" ? x.titulo.localeCompare(y.titulo, L) :
+      o === "nivel" ? x.nivel[0] - y.nivel[0] :
+      String(y.fecha).localeCompare(String(x.fecha)));
+  }
+  function tagsFor(a){
+    return `<span class="tag lang" title="${esc(t().idioma[a.idioma] || "")}">${esc(BADGE[a.idioma] || "ES")}</span>` +
+      `<span class="status ${esc(a.estado)}">${esc(t().estado[a.estado] || a.estado)}</span><span class="tag">${esc(a.licencia)}</span>`;
+  }
+  function render(){
+    const list = sorted(DATA.filter(matches));
+    const s = t().stats;
+    $("grid").innerHTML = list.map(a => {
+      const sm = summary(a);
+      return `
+      <button class="card" type="button" data-id="${esc(a.id)}" aria-label="${esc(t().view)} ${esc(a.titulo)}">
+        <div class="top">
+          <div class="tags">${tagsFor(a)}</div>
+          <h3>${esc(a.titulo)}</h3>
+          <span class="by">${esc(t().by)} ${esc(a.autor)}${a.region ? " · " + esc(a.region) : ""}</span>
+          <p class="sum">${esc(sm.text)}</p>
+          ${sm.other ? `<span class="note">${esc(t().onlyOther)}</span>` : ""}
+        </div>
+        <dl class="stats">
+          <div><dt>${s[0]}</dt><dd>${a.nivel[0]}→${a.nivel[1]}</dd></div>
+          <div><dt>${s[1]}</dt><dd>${esc(a.jugadores)}</dd></div>
+          <div><dt>${s[2]}</dt><dd>${esc(a.sesiones)}</dd></div>
+          <div><dt>${s[3]}</dt><dd style="font-size:.78rem">${esc(t().tono[a.tono] || a.tono)}</dd></div>
+        </dl>
+      </button>`;}).join("");
+    $("count").textContent = DATA.length ? t().count(list.length) : "";
+    $("empty").innerHTML = DATA.length ? t().emptyFilter : t().emptyNone;
+    $("empty").hidden = list.length > 0;
+  }
+  ctrls.forEach(c => c.addEventListener(c.id === "q" ? "input" : "change", render));
+  $("reset").addEventListener("click", () => { $("q").value = ""; ctrls.slice(1, 7).forEach(c => c.value = ""); $("fOrden").value = "reciente"; render(); });
+
+  // Ficha
+  function openCard(id){
+    const a = DATA.find(x => x.id === id); if(!a) return;
+    current = id;
+    const sm = summary(a), f = t().facts;
+    $("dTags").innerHTML = tagsFor(a) + (a.etiquetas || []).map(x => `<span class="tag">${esc(x)}</span>`).join("");
+    $("dTitle").textContent = a.titulo;
+    $("dBy").textContent = t().by + " " + a.autor;
+    $("dSum").innerHTML = esc(sm.text) + (sm.other ? ` <span class="note">${esc(t().onlyOther)}</span>` : "");
+    $("dFacts").innerHTML = [
+      [f[0], `${a.nivel[0]} → ${a.nivel[1]}`], [f[1], a.jugadores], [f[2], a.sesiones],
+      [f[3], t().tono[a.tono] || a.tono], [f[4], a.region || "—"], [f[5], t().idioma[a.idioma] || "—"], [f[6], a.paginas || "—"]
+    ].map(([k, v]) => `<div><dt class="label">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
+    const lu = LICURL[a.licencia] ? LICURL[a.licencia] + L : "#licencias";
+    $("dLic").innerHTML = `<b>${esc(a.licencia)}.</b> ${esc(t().lic[a.licencia] || "")} <a href="${lu}" target="_blank" rel="noopener">${esc(t().licLink)}</a>`;
+    $("dAct").innerHTML = a.pdf
+      ? `<a class="btn primary" href="${esc(a.pdf)}" download>${esc(t().dl)}</a><span class="label">${esc(t().free)} · ${esc(a.licencia)}</span>`
+      : `<button class="btn" type="button" disabled>${esc(t().soon)}</button>`;
+    if(!dlg.open){ if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); }
+  }
+  $("grid").addEventListener("click", e => { const c = e.target.closest(".card"); if(c) openCard(c.dataset.id); });
+  $("dClose").addEventListener("click", () => dlg.close ? dlg.close() : dlg.removeAttribute("open"));
+  dlg.addEventListener("click", e => { if(e.target === dlg) dlg.close(); });
+  dlg.addEventListener("close", () => { current = null; });
+
+  applyLang(L, false);
+  const h = location.hash.slice(1);
+  if(h && DATA.some(a => a.id === h)) openCard(h);
+
+  // Formulario
+  const form = $("envio"), err = $("formErr"), ok = $("formOk");
+  const preview = window.self !== window.top || location.protocol === "file:";
+  form.addEventListener("submit", e => {
+    err.hidden = true; ok.hidden = true;
+    const problems = [];
+    form.querySelectorAll("[required]").forEach(el => {
+      if(el.type === "radio") return;
+      if(el.type === "checkbox" ? !el.checked : !el.value.trim()) problems.push(el);
+    });
+    const ini = +$("nivelIni").value, fin = +$("nivelFin").value;
+    const badLvl = ini && fin && fin < ini;
+    if(badLvl) problems.push($("nivelFin"));
+    const file = $("archivo").files[0];
+    const badFile = file && (file.size > 8 * 1024 * 1024 || !/\.pdf$/i.test(file.name));
+    if(badFile) problems.push($("archivo"));
+    if($("email").value && !$("email").checkValidity()) problems.push($("email"));
+    if(problems.length){
+      e.preventDefault();
+      const m = [];
+      if(problems.some(p => p.type !== "checkbox" && p !== $("archivo") && !(p === $("nivelFin") && badLvl))) m.push(t().errReq);
+      if(badLvl) m.push(t().errLvl);
+      if(problems.includes($("archivo"))) m.push(t().errFile);
+      if(problems.some(p => p.type === "checkbox")) m.push(t().errDecl);
+      err.textContent = t().errHead + [...new Set(m)].join("; ") + ".";
+      err.hidden = false;
+      problems[0].focus();
+      return;
+    }
+    if(preview){ e.preventDefault(); ok.textContent = t().preview; ok.hidden = false; }
+  });
+})();
+</script>
+</body>
+</html>
