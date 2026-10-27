@@ -175,15 +175,11 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
   .page:not(.active) h1{font-size:1.4rem}
 }
 
-/* Página de agradecimiento: las cuatro versiones visibles a la vez */
-.thanks .spread{grid-template-columns:1fr 1fr}
+/* Página de agradecimiento: todas las versiones visibles a la vez */
+.thanks .spread{grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); background:var(--page); overflow:hidden}
 .thanks .spread::after{display:none}
-.thanks .page{display:flex !important; color:var(--ink)}
-.thanks .page + .page{border-top:0}
-.thanks .page:nth-child(n+3){border-top:1px solid var(--line)}
-.thanks .page:nth-child(odd){border-right:1px solid var(--line)}
-.thanks .page h1{font-size:clamp(1.5rem,3vw,2.2rem)}
-@media (max-width:760px){ .thanks .spread{grid-template-columns:1fr} .thanks .page:nth-child(odd){border-right:0} .thanks .page + .page{border-top:1px solid var(--line)} }
+.thanks .page{display:flex !important; color:var(--ink); background:var(--page); border:0 !important; box-shadow:0 0 0 .5px var(--line)}
+.thanks .page h1{font-size:clamp(1.5rem,3vw,2.1rem)}
 </style>
 </head>
 <body>
@@ -194,6 +190,7 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
 <article class="page both active" lang="en"><span class="label">English</span><h1>We have received your adventure</h1><p>Thank you for sharing it. We will review it over the next few days and write to the email you gave us to let you know whether it is published or needs changes.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=en#catalogo">Back to the catalogue</a></div></div></article>
 <article class="page both active" lang="de"><span class="label">Deutsch</span><h1>Wir haben dein Abenteuer erhalten</h1><p>Danke, dass du es teilst. Wir prüfen es in den nächsten Tagen und schreiben dir an die angegebene E-Mail-Adresse, ob es veröffentlicht wird oder noch Änderungen braucht.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=de#catalogo">Zurück zum Katalog</a></div></div></article>
 <article class="page both active" lang="fr"><span class="label">Français</span><h1>Nous avons bien reçu votre aventure</h1><p>Merci de l’avoir partagée. Nous la relirons dans les prochains jours et vous écrirons à l’adresse indiquée pour vous dire si elle est publiée ou si elle doit être modifiée.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=fr#catalogo">Retour au catalogue</a></div></div></article>
+<article class="page both active" lang="it"><span class="label">Italiano</span><h1>Abbiamo ricevuto la tua avventura</h1><p>Grazie per averla condivisa. La esamineremo nei prossimi giorni e ti scriveremo all’indirizzo e-mail che hai indicato per dirti se viene pubblicata o se ha bisogno di modifiche.</p><div class="foot"><div class="cta"><a class="btn primary" href="/?lang=it#catalogo">Torna al catalogo</a></div></div></article>
 </div>
 </div>
 </body>
