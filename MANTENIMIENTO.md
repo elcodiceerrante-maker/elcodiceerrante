@@ -38,3 +38,14 @@ Cada ficha se puede enlazar directamente: `https://tu-web.netlify.app/#id-de-la-
 ## 5. Retirar una aventura
 
 Borra su bloque de `catalogo.js` y su PDF de `aventuras/`, y guarda los cambios en GitHub. Borra también el envío en **Forms** si el autor pide la supresión de sus datos.
+
+## 6. Protección de datos: obligaciones al gestionar envíos
+
+Estas pautas son las que promete la política de privacidad de la web. Cumplirlas es responsabilidad del titular.
+
+- **Créditos.** Antes de publicar, mira en el envío la casilla `consentimiento-creditos`. Si no está marcada, en `catalogo.js` escribe `autor: "Autor anónimo"` y no pongas el nombre en ningún sitio de la web.
+- **Envíos rechazados o pendientes.** Borra el envío en Netlify (Forms → envio-aventura → Delete submission) y el hilo de correo con el autor en Gmail **antes de tres meses** desde que le comuniques el resultado.
+- **Envíos publicados.** Conserva el correo mientras la aventura esté publicada. Cuando la retires, borra también el envío y el correo.
+- **Retirada del consentimiento.** Si un autor lo retira, quita su nombre de los créditos (pon «Autor anónimo») y, si lo pide, retira la aventura. Borra sus datos en Netlify y Gmail.
+- **Menores.** Si por el contenido o el trato sospechas que el autor tiene menos de 14 años, pide por correo la autorización de sus padres o tutores antes de publicar.
+- **Servicios externos.** La web no carga nada de terceros: las tipografías están en la carpeta `fonts`. No actives Netlify Analytics ni incrustes vídeos, mapas o contadores sin actualizar antes la política de cookies.
