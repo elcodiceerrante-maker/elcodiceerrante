@@ -45,6 +45,25 @@
 */
 window.CATALOGO = [
   {
+    id: "la-caida-de-quel-thalas",
+    titulo: "La caída de Quel'Thalas",
+    titulos: { en: "The Fall of Quel'Thalas" },
+    autor: "Jorge Gómez Vaello",
+    idioma: "bi",
+    resumen: {
+      es: "Todos saben que Quel'Thalas cayó; esta aventura cuenta cómo se vivió por dentro. Un grupo de la Alianza sigue el rastro de un brujo orco hasta el reino de los elfos y combate junto a Sylvanas Brisaveloz mientras Arthas avanza hacia la Fuente del Sol. Derriban puentes, defienden piedras rúnicas y desenmascaran a un traidor, sin saber que cada victoria acerca la tragedia. Seis episodios para 4–5 personajes de nivel 3 a 5, con fichas emergentes enlazadas a la wiki. Versión preliminar, con estadísticas provisionales hasta la salida del manual.",
+      en: "Everyone knows Quel'Thalas fell; this adventure tells what it was like from inside. An Alliance party follows an orc warlock's trail into the elven kingdom and fights beside Sylvanas Windrunner as Arthas marches on the Sunwell. They bring down bridges, defend runestones and unmask a traitor, unaware that every victory brings the tragedy closer. Six episodes for 4–5 characters of levels 3 to 5, with hover cards linked to the wiki. Preliminary version, with provisional statistics until the sourcebook is released.",
+      de: "Jeder weiß, dass Quel'Thalas gefallen ist; dieses Abenteuer erzählt, wie es sich von innen anfühlte. Eine Gruppe der Allianz folgt der Spur eines orcischen Hexenmeisters ins Reich der Elfen und kämpft an der Seite von Sylvanas Windläufer, während Arthas auf den Sonnenbrunnen vorrückt. Sie reißen Brücken ein, verteidigen Runensteine und entlarven einen Verräter, ohne zu ahnen, dass jeder Sieg die Tragödie näher bringt. Sechs Episoden für 4–5 Charaktere der Stufen 3 bis 5, mit Infokarten, die auf das Wiki verlinken. Vorläufige Fassung mit vorläufigen Werten bis zum Erscheinen des Quellenbuchs.",
+      fr: "Tout le monde sait que Quel'Thalas est tombé ; cette aventure raconte comment on l'a vécu de l'intérieur. Un groupe de l'Alliance suit la piste d'un démoniste orc jusqu'au royaume des elfes et combat aux côtés de Sylvanas Coursevent tandis qu'Arthas marche sur le Puits de soleil. Ils abattent des ponts, défendent des pierres runiques et démasquent un traître, sans savoir que chaque victoire rapproche la tragédie. Six épisodes pour 4 à 5 personnages de niveau 3 à 5, avec des fiches contextuelles liées au wiki. Version préliminaire, aux statistiques provisoires jusqu'à la sortie du livre.",
+      it: "Tutti sanno che Quel'Thalas è caduta; questa avventura racconta com’è stato viverlo dall’interno. Un gruppo dell’Alleanza segue le tracce di uno stregone orco fino al regno degli elfi e combatte al fianco di Sylvanas Ventolesto mentre Arthas marcia verso il Pozzo Solare. Abbattono ponti, difendono pietre runiche e smascherano un traditore, senza sapere che ogni vittoria avvicina la tragedia. Sei episodi per 4–5 personaggi dal livello 3 al 5, con schede a comparsa collegate al wiki. Versione preliminare, con statistiche provvisorie fino all’uscita del manuale."
+    },
+    nivel: [3, 5], jugadores: "4–5", sesiones: 6,
+    tono: "Trágico", region: "Quel'Thalas",
+    etiquetas: ["Sylvanas", "Arthas", "Lunargenta", "Silvermoon", "Fuente del Sol", "Sunwell", "Tercera Guerra", "Third War", "elfos", "elves"],
+    licencia: "CC0 1.0", estado: "publicada",
+    pdf: { es: "aventuras/la-caida-de-quel-thalas.pdf", en: "aventuras/the-fall-of-quel-thalas.pdf" }, paginas: 34, fecha: "2026-10-31"
+  },
+  {
     id: "el-yunque-del-primer-nombre",
     titulo: "El Yunque del Primer Nombre",
     titulos: { en: "The Anvil of the First Name" },
