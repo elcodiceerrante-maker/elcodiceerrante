@@ -16,3 +16,15 @@
   for = "/aventuras/*"
   [headers.values]
     Content-Disposition = "attachment"
+
+# Aplicación instalable: el service worker y el manifiesto no deben quedarse en caché
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "no-cache"

@@ -49,3 +49,11 @@ Estas pautas son las que promete la política de privacidad de la web. Cumplirla
 - **Retirada del consentimiento.** Si un autor lo retira, quita su nombre de los créditos (pon «Autor anónimo») y, si lo pide, retira la aventura. Borra sus datos en Netlify y Gmail.
 - **Menores.** Si por el contenido o el trato sospechas que el autor tiene menos de 14 años, pide por correo la autorización de sus padres o tutores antes de publicar.
 - **Servicios externos.** La web no carga nada de terceros: las tipografías están en la carpeta `fonts`. No actives Netlify Analytics ni incrustes vídeos, mapas o contadores sin actualizar antes la política de cookies.
+
+## Aplicación instalable (móvil)
+
+La web se puede instalar como aplicación desde el móvil (botón «Instalar la app» o «Añadir a pantalla de inicio»). Funciona con estos archivos: `site.webmanifest` (nombre, colores e iconos), `sw.js` (copia sin conexión) y los iconos `icon-*.png`, `apple-touch-icon.png`, `favicon.*`.
+
+- No hay que hacer nada al publicar aventuras: la app descarga siempre el catálogo y las páginas más recientes cuando hay conexión.
+- Sin conexión, muestra la última versión guardada y los PDF que el usuario ya haya abierto.
+- Solo si cambias las fuentes o los iconos, sube el número de `VERSION` al principio de `sw.js` (por ejemplo, de `ce-v1` a `ce-v2`).

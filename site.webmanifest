@@ -1,11 +1,32 @@
 {
+  "id": "/",
   "name": "Códice Errante",
   "short_name": "Códice Errante",
+  "description": "Aventuras gratuitas de D&D 2024 ambientadas en Azeroth. Free D&D 2024 adventures set in Azeroth.",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ECEEF2",
+  "theme_color": "#ECEEF2",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ],
-  "theme_color": "#12141C",
-  "background_color": "#12141C",
-  "display": "browser"
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
