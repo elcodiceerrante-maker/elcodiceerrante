@@ -203,6 +203,19 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
   .page:not(.active) p{display:none}
   .page:not(.active) h1{font-size:1.4rem}
 }
+
+/* Enlace a Episodios de Terranula (proyecto hermano) */
+.tnl{display:flex; align-items:center; gap:1rem 1.4rem; flex-wrap:wrap; margin-top:1rem; padding:.85rem 1.2rem; background:#000; color:#fff; border:1px solid #2B2B2B; border-radius:4px; text-decoration:none}
+.tnl:hover{border-color:#fff}
+.tnl img{height:42px; width:auto; flex:none}
+.tnl .hd{display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .8rem}
+.tnl .sl{font:700 clamp(1.15rem,2.4vw,1.45rem)/1.15 var(--display); color:#fff}
+.tnl .tx{flex:1 1 300px; display:grid; gap:.35rem; min-width:0}
+.tnl .lb{font:500 .66rem/1.2 var(--mono); letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.65)}
+.tnl .ds{font:400 .98rem/1.4 var(--body); color:rgba(255,255,255,.9)}
+.tnl .go{font:500 .95rem/1 var(--body); border:1px solid #fff; border-radius:3px; padding:.55rem .9rem; white-space:nowrap}
+.tnl:hover .go{background:#fff; color:#000}
+@media (max-width:560px){ .tnl img{height:34px} .tnl .go{width:100%; text-align:center} }
 </style>
 </head>
 <body>
@@ -230,6 +243,14 @@ footer{padding-block:2rem 3rem; color:var(--muted); font-size:.9rem; border-top:
     </div>
   </div>
 </nav>
+
+<a class="tnl" href="https://episodiosdeterranula.netlify.app" target="_blank" rel="noopener">
+  <span class="tx">
+    <span class="hd"><span class="sl"><span lang="es">¿Buscas más rol? Visita</span><span lang="en">Looking for more roleplaying? Visit</span><span lang="de">Suchst du mehr Rollenspiel? Besuche</span><span lang="fr">Vous cherchez plus de jeu de rôle ? Visitez</span><span lang="it">Cerchi più gioco di ruolo? Visita</span></span><img src="terranula.png" alt="Episodios de Terranula" width="174" height="42"></span>
+    <span class="ds"><span lang="es">Partidas gratuitas para cualquier sistema, escritas por la comunidad: terror cósmico, Vampiro, D&amp;D, comedia…</span><span lang="en">Free scenarios for any system, written by the community: cosmic horror, Vampire, D&amp;D, comedy…</span><span lang="de">Kostenlose Szenarien für jedes System aus der Community: kosmischer Horror, Vampire, D&amp;D, Komödie…</span><span lang="fr">Des parties gratuites pour tous les systèmes, écrites par la communauté : horreur cosmique, Vampire, D&amp;D, comédie…</span><span lang="it">Avventure gratuite per qualsiasi sistema, scritte dalla comunità: orrore cosmico, Vampiri, D&amp;D, commedia…</span></span>
+  </span>
+  <span class="go"><span lang="es">Entrar →</span><span lang="en">Enter →</span><span lang="de">Hinein →</span><span lang="fr">Entrer →</span><span lang="it">Entra →</span></span>
+</a>
 
 <header class="hero" id="inicio">
   <div class="spread">
